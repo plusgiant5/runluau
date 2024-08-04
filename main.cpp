@@ -70,10 +70,15 @@ std::string read_script(const std::string& path) {
 	}
 }
 
-std::vector<std::string> read_options(std::vector<std::string> args) {
+std::vector<std::string> read_script_args(std::vector<std::string> args) {
 	std::vector<std::string> script_args;
+	bool reading_args = false;
 	for (const auto& arg : args) {
-		
+		if (reading_args) [[likely]] {
+			script_args.push_back(arg);
+		} else if (arg == "args") [[unlikely]] {
+			reading_args = true;
+		}
 	}
 	return script_args;
 }
@@ -86,7 +91,7 @@ int main(int argc, char* argv[]) {
 	std::string mode = args[0];
 	if (mode == "run") {
 		std::string source = read_script(args[1]);
-		runluau::execute(source, 1, 1);
+		runluau::execute(source, 1, 1, read_script_args(args));
 	} else if (mode == "build") {
 		std::string source = read_script(args[1]);
 	} else [[unlikely]] {

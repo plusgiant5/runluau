@@ -28,7 +28,7 @@ lua_State* create_state() {
 std::string runluau::compile(const std::string& source, uint8_t O, uint8_t g) {
 	return Luau::compile(source, { .optimizationLevel = O, .debugLevel = g }, {});
 }
-void runluau::execute_bytecode(const std::string& bytecode) {
+void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::string> args) {
 	lua_State* state = create_state();
 	struct lua_State* thread = lua_newthread(state);
 	int status = luau_load(thread, "=runluau", bytecode.data(), bytecode.size(), 0);
@@ -41,8 +41,11 @@ void runluau::execute_bytecode(const std::string& bytecode) {
 		printf("Syntax error:\n%s\n", error_message);
 		exit(ERROR_INTERNAL_ERROR);
 	}
-	status = lua_resume(thread, NULL, 0);
-	if (status != LUA_OK) {
+	for (const auto& arg : args) {
+		lua_pushlstring(thread, arg.data(), arg.size());
+	}
+	status = lua_resume(thread, NULL, (int)args.size());
+	if (status != LUA_OK) [[unlikely]] {
 		printf("Script errored:\n");
 		if (status == LUA_YIELD) [[unlikely]] {
 			printf("Thread yielded unexpectedly\n");
@@ -55,6 +58,6 @@ void runluau::execute_bytecode(const std::string& bytecode) {
 		printf("%s\n", lua_debugtrace(thread));
 	}
 }
-void runluau::execute(const std::string& source, uint8_t O, uint8_t g) {
-	execute_bytecode(compile(source, O, g));
+void runluau::execute(const std::string& source, uint8_t O, uint8_t g, std::vector<std::string> args) {
+	execute_bytecode(compile(source, O, g), args);
 }
