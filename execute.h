@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Luau/Compiler.h>
-#include <lua.h>
+#include <lualib.h>
 
 namespace runluau {
 	std::string compile(const std::string& source, uint8_t O, uint8_t g);

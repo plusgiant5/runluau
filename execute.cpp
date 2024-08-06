@@ -2,8 +2,6 @@
 
 #include <Windows.h>
 
-#include <lualib.h>
-
 #include "plugins.h"
 
 using namespace runluau;
@@ -26,7 +24,7 @@ lua_State* create_state() {
 }
 
 std::string runluau::compile(const std::string& source, uint8_t O, uint8_t g) {
-	return Luau::compile(source, { .optimizationLevel = O, .debugLevel = g }, {});
+	return Luau::compile(source, { .optimizationLevel = O, .debugLevel = g, .vectorLib = "Vector3", .vectorCtor = "new" }, {});
 }
 void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::string> args) {
 	lua_State* state = create_state();
