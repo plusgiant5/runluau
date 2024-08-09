@@ -20,6 +20,7 @@ lua_State* create_state() {
 	struct lua_State* state = lua_newstate(l_alloc, NULL);
 	luaL_openlibs(state);
 	apply_plugins(state);
+	luaL_sandbox(state);
 	return state;
 }
 
@@ -29,6 +30,7 @@ std::string runluau::compile(const std::string& source, uint8_t O, uint8_t g) {
 void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::string> args) {
 	lua_State* state = create_state();
 	struct lua_State* thread = lua_newthread(state);
+	luaL_sandboxthread(thread);
 	int status = luau_load(thread, "=runluau", bytecode.data(), bytecode.size(), 0);
 	if (status != 0) [[unlikely]] {
 		if (status != 1) [[unlikely]] {
@@ -55,6 +57,7 @@ void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::str
 
 		printf("%s\n", lua_debugtrace(thread));
 	}
+	lua_close(state);
 }
 void runluau::execute(const std::string& source, uint8_t O, uint8_t g, std::vector<std::string> args) {
 	execute_bytecode(compile(source, O, g), args);

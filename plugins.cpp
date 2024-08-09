@@ -5,7 +5,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-typedef void(__fastcall* runluau_load_t)(lua_State* state);
+typedef void(__fastcall* register_library_t)(lua_State* state);
 
 void apply_plugins(lua_State* state) {
 	wchar_t self_path[1024];
@@ -22,12 +22,12 @@ void apply_plugins(lua_State* state) {
 				wprintf(L"Failed to load plugin %s\n", file.path().wstring().c_str());
 				exit(ERROR_MOD_NOT_FOUND);
 			}
-			runluau_load_t runluau_load = (runluau_load_t)GetProcAddress(plugin_module, "runluau_load");
-			if (!runluau_load) [[unlikely]] {
-				wprintf(L"Invalid plugin %s (missing runluau_load export)\n", file.path().wstring().c_str());
+			register_library_t register_library = (register_library_t)GetProcAddress(plugin_module, "register_library");
+			if (!register_library) [[unlikely]] {
+				wprintf(L"Invalid plugin %s (missing register_library export)\n", file.path().wstring().c_str());
 				exit(ERROR_PROC_NOT_FOUND);
 			}
-			runluau_load(state);
+			register_library(state);
 		}
 	}
 }
