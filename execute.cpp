@@ -24,10 +24,10 @@ lua_State* create_state() {
 	return state;
 }
 
-std::string runluau::compile(const std::string& source, uint8_t O, uint8_t g) {
-	return Luau::compile(source, { .optimizationLevel = O, .debugLevel = g, .vectorLib = "Vector3", .vectorCtor = "new" }, {});
+std::string runluau::compile(const std::string& source, settings& settings) {
+	return Luau::compile(source, { .optimizationLevel = settings.O, .debugLevel = settings.g, .vectorLib = "Vector3", .vectorCtor = "new" }, {});
 }
-void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::string> args) {
+void runluau::execute_bytecode(const std::string& bytecode, settings& settings) {
 	lua_State* state = create_state();
 	struct lua_State* thread = lua_newthread(state);
 	luaL_sandboxthread(thread);
@@ -41,10 +41,10 @@ void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::str
 		printf("Syntax error:\n%s\n", error_message);
 		exit(ERROR_INTERNAL_ERROR);
 	}
-	for (const auto& arg : args) {
+	for (const auto& arg : settings.script_args) {
 		lua_pushlstring(thread, arg.data(), arg.size());
 	}
-	status = lua_resume(thread, NULL, (int)args.size());
+	status = lua_resume(thread, NULL, (int)settings.script_args.size());
 	if (status != LUA_OK) [[unlikely]] {
 		printf("Script errored:\n");
 		if (status == LUA_YIELD) [[unlikely]] {
@@ -59,6 +59,6 @@ void runluau::execute_bytecode(const std::string& bytecode, std::vector<std::str
 	}
 	lua_close(state);
 }
-void runluau::execute(const std::string& source, uint8_t O, uint8_t g, std::vector<std::string> args) {
-	execute_bytecode(compile(source, O, g), args);
+void runluau::execute(const std::string& source, settings& settings) {
+	execute_bytecode(compile(source, settings), settings);
 }

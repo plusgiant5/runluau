@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>run KonstantCFV args test C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\ScrapedScripts O1g1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run KonstantCFV args test ScrapedScripts O1g1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>run KonstantCFV args test ScrapedScripts O1g1</LocalDebuggerCommandArguments>

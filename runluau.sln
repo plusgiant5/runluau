@@ -6,11 +6,15 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runluau", "runluau.vcxproj", "{D7591125-454C-4070-AC27-76CE2BB891C8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A71BEF97-5F84-479D-B9B0-480A00ABD88A} = {A71BEF97-5F84-479D-B9B0-480A00ABD88A}
+		{CFD23E11-C781-465D-AC4D-8BCED22EA582} = {CFD23E11-C781-465D-AC4D-8BCED22EA582}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luau-dynamic", "luau-dynamic\luau-dynamic.vcxproj", "{A71BEF97-5F84-479D-B9B0-480A00ABD88A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runluau-build-template", "runluau-build-template\runluau-build-template.vcxproj", "{CFD23E11-C781-465D-AC4D-8BCED22EA582}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A71BEF97-5F84-479D-B9B0-480A00ABD88A} = {A71BEF97-5F84-479D-B9B0-480A00ABD88A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
