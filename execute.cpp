@@ -28,9 +28,12 @@ std::string runluau::compile(const std::string& source, settings& settings) {
 	return Luau::compile(source, { .optimizationLevel = settings.O, .debugLevel = settings.g, .vectorLib = "Vector3", .vectorCtor = "new" }, {});
 }
 void runluau::execute_bytecode(const std::string& bytecode, settings& settings) {
+	auto script_args = settings.script_args.value_or(std::vector<std::string>());
+
 	lua_State* state = create_state();
 	struct lua_State* thread = lua_newthread(state);
 	luaL_sandboxthread(thread);
+
 	int status = luau_load(thread, "=runluau", bytecode.data(), bytecode.size(), 0);
 	if (status != 0) [[unlikely]] {
 		if (status != 1) [[unlikely]] {
@@ -41,10 +44,12 @@ void runluau::execute_bytecode(const std::string& bytecode, settings& settings) 
 		printf("Syntax error:\n%s\n", error_message);
 		exit(ERROR_INTERNAL_ERROR);
 	}
-	for (const auto& arg : settings.script_args) {
+
+	for (const auto& arg : script_args) {
 		lua_pushlstring(thread, arg.data(), arg.size());
 	}
-	status = lua_resume(thread, NULL, (int)settings.script_args.size());
+	status = lua_resume(thread, NULL, (int)script_args.size());
+
 	if (status != LUA_OK) [[unlikely]] {
 		printf("Script errored:\n");
 		if (status == LUA_YIELD) [[unlikely]] {

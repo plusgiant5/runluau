@@ -166,7 +166,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>move $(SolutionDir)luau\$(Configuration)\luau.dll $(SolutionDir)out\$(Configuration)</Command>
+      <Command>copy $(SolutionDir)luau\$(Configuration)\luau.dll $(SolutionDir)out\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
