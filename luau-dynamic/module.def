@@ -1,5 +1,13 @@
 LIBRARY "luau"
 EXPORTS
+	?load@luau@@YAXPEAUlua_State@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
+	?thread_count@luau@@3_KA
+	?resume_and_handle_status@luau@@YAXPEAUlua_State@@0H@Z
+
+	?compile@CodeGen@Luau@@YA?AUCompilationResult@12@PEAUlua_State@@HAEBUCompilationOptions@12@PEAUCompilationStats@12@@Z
+	?create@CodeGen@Luau@@YAXPEAUlua_State@@@Z
+	?isSupported@CodeGen@Luau@@YA_NXZ
+
 	?compile@Luau@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV23@AEBUCompileOptions@1@AEBUParseOptions@1@PEAVBytecodeEncoder@1@@Z
 	luau_load
 	lua_newstate
@@ -20,6 +28,7 @@ EXPORTS
 	lua_tolstring
 	lua_getfield
 	lua_type
+	lua_status
 	lua_toboolean
 	lua_objlen
 	lua_topointer
@@ -34,3 +43,13 @@ EXPORTS
 	luaL_sandbox
 	luaL_sandboxthread
 	luaL_tolstring
+	lua_resetthread
+	lua_tothread
+	luaL_typeerrorL
+	lua_xmove
+	lua_xpush
+	lua_typename
+	lua_pushvalue
+	lua_yield
+	luaL_checknumber
+	luaL_optnumber

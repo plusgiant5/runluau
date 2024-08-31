@@ -2,8 +2,7 @@
 
 #include <optional>
 
-#include <Luau/Compiler.h>
-#include <lualib.h>
+#include <luau.h>
 
 namespace runluau {
 	struct settings {

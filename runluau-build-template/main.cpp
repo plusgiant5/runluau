@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-#include <lualib.h>
+#include <luau.h>
 
 #include "dllloader.h"
 
@@ -91,15 +91,13 @@ int main(int argc, char* argv[]) {
 		register_funcs.push_back(register_library);
 		current_offset += plugin_size;
 	}
-	struct lua_State* state = lua_newstate(l_alloc, NULL);
-	luaL_openlibs(state);
+	struct lua_State* state = luau::create_state();
 	for (const auto& register_func : register_funcs) {
 		register_func(state);
 	}
 	luaL_sandbox(state);
 
-	struct lua_State* thread = lua_newthread(state);
-	luaL_sandboxthread(thread);
+	struct lua_State* thread = luau::create_thread(state);
 
 	int status = luau_load(thread, "=runluau", bytecode, bytecode_size, 0);
 	if (status != 0) [[unlikely]] {

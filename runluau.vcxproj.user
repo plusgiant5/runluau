@@ -6,7 +6,7 @@
     <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>run KonstantCFV args test ScrapedScripts O1g1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>run testinput</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

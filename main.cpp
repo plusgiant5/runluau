@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 		std::string source = read_script(args[1]);
 		runluau::settings settings = read_args(args, 2);
 		if (settings.plugins != std::nullopt) [[unlikely]]
-			help_then_exit("Cannot specify `plugins` in `run` mode.");
+			help_then_exit("Cannot specify `--plugins` in `run` mode.");
 
 		runluau::execute(source, settings);
 	} else if (mode == "build") {
@@ -171,7 +171,8 @@ int main(int argc, char* argv[]) {
 		fs::path output_path = args[2];
 		runluau::settings settings = read_args(args, 3);
 		if (settings.script_args != std::nullopt) [[unlikely]]
-			help_then_exit("Cannot specify `args` in `build` mode.");
+			help_then_exit("Cannot specify `--args` in `build` mode.");
+
 		std::string bytecode = runluau::compile(source, settings);
 		if (bytecode[0] == '\0') {
 			printf("Syntax error:\n%s\n", bytecode.data() + 1);
@@ -311,5 +312,7 @@ int main(int argc, char* argv[]) {
 	} else [[unlikely]] {
 		help_then_exit(std::format("Unknown mode `{}`.", mode));
 	}
-	return ERROR_SUCCESS;
+	//return ERROR_SUCCESS;
+	//while (true) {}
+	return 0;
 }

@@ -115,7 +115,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,7 +134,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
