@@ -29,6 +29,7 @@ EXPORTS
 	lua_getfield
 	lua_type
 	lua_status
+	lua_costatus
 	lua_toboolean
 	lua_objlen
 	lua_topointer
@@ -53,3 +54,5 @@ EXPORTS
 	lua_yield
 	luaL_checknumber
 	luaL_optnumber
+	lua_pushthread
+	lua_pushlightuserdatatagged

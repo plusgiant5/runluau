@@ -118,14 +118,19 @@ API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, in
 	scheduler::add_thread_to_resume_queue(thread, from, args);
 }
 API void luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args) {
-	int status = lua_resume(thread, from, args);
-	switch (status) {
-	case LUA_OK: case LUA_YIELD: break;
-	case LUA_ERRRUN:
-		printf("Script errored:\n" RED "%s" RESET "\nStack trace:\n%s\n", lua_tostring(thread, -1), beautify_stack_trace(lua_debugtrace(thread)).c_str());
-		//printf("Script errored. Stack trace:\n%s\n", lua_debugtrace(thread));
-		break;
-	default: printf("Unknown status: %d\n", status);
+	if (!from || lua_costatus(from, thread) == LUA_COSUS) {
+		int status = lua_resume(thread, from, args);
+		switch (status) {
+		case LUA_OK: case LUA_YIELD: break;
+		case LUA_ERRRUN:
+			printf("Script errored:\n" RED "%s" RESET "\nStack trace:\n%s\n", lua_tostring(thread, -1), beautify_stack_trace(lua_debugtrace(thread)).c_str());
+			//printf("Script errored. Stack trace:\n%s\n", lua_debugtrace(thread));
+			break;
+		default: printf("Unknown status: %d\n", status);
+		}
+		if (status != LUA_YIELD || (from && lua_costatus(from, thread) == LUA_COSUS)) {
+			lua_resetthread(thread);
+		}
 	}
 }
 
@@ -138,18 +143,23 @@ void luau::start_scheduler() {
 	}
 	LARGE_INTEGER frequency, start, end;
 	QueryPerformanceFrequency(&frequency);
+	LARGE_INTEGER gc_start, gc_end;
 	size_t i = 0;
 	while (true) {
 		QueryPerformanceCounter(&start);
 		//printf("Frame %lld\n", ++i);
 		scheduler::cycle();
+		QueryPerformanceCounter(&end);
+		//QueryPerformanceCounter(&gc_start);
+		lua_gc(main_thread, LUA_GCSTEP, 1000);
+		//QueryPerformanceCounter(&gc_end);
+		//printf("GC in %f\n", static_cast<double>(gc_end.QuadPart - gc_start.QuadPart) / frequency.QuadPart);
 		if (luau::thread_count <= 1) {
 			//printf("Thread count: %lld\nMain status: %d\n", luau::thread_count, lua_status(main_thread));
 			if (lua_status(main_thread) != LUA_YIELD) {
 				break;
 			}
 		}
-		QueryPerformanceCounter(&end);
 		double delta_time = static_cast<double>(end.QuadPart - start.QuadPart) / frequency.QuadPart;
 		double time_left = (1.0 / (SCHEDULER_RATE * 2.0)) - delta_time;
 		//printf("%f - %f = %f\n", (1.0 / SCHEDULER_RATE), delta_time, time_left);
@@ -159,7 +169,7 @@ void luau::start_scheduler() {
 			WaitForSingleObject(timer, INFINITE);
 		}
 	}
-	printf("Scheduler stopped\n");
+	//printf("Scheduler stopped\n");
 }
 
 API void signal_yield_ready(HANDLE yield_ready_event) {

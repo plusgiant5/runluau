@@ -148,11 +148,22 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 	return settings;
 }
 
+BOOL __stdcall ctrl_handler(DWORD type) {
+	switch (type) {
+	case CTRL_C_EVENT:
+		printf("Exiting\n");
+		__fastfail(ERROR_PROCESS_ABORTED);
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 uintptr_t align(uintptr_t value, uintptr_t alignment) {
 	return (value + (alignment - 1)) & ~(alignment - 1);
 }
-
 int main(int argc, char* argv[]) {
+	SetConsoleCtrlHandler(ctrl_handler, TRUE);
 	std::vector<std::string> args(argv + 1, argv + argc);
 	if (args.size() < 2) [[unlikely]]
 		help_then_exit("Not enough arguments.");

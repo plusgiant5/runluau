@@ -1,7 +1,4 @@
-declare getscriptbytecode: ((script: BaseScript) -> string)
-declare getscripthash: ((script: BaseScript) -> string)
-declare getgenv: (() -> {[any]: any})
-declare rconsoleprint: ((...any) -> ())
+-- filesystem
 declare fs: {
 	readfile: (path: string) -> string;
 	writefile: (path: string, content: string) -> ();
@@ -13,10 +10,25 @@ declare fs: {
 	delfile: (path: string) -> ();
 	delfolder: (path: string) -> ();
 }
+
+
+
+-- luau
 type compiler_settings = {
 	optimizationLevel: number?;
 	debugLevel: number?;
 }
 declare luau: {
 	compile: (source: string, settings: compiler_settings) -> string;
+}
+
+
+
+-- task
+declare task: {
+	wait: (duration: number?) -> number;
+	spawn: (func: (...any) -> (...any), ...any) -> thread;
+	defer: (func: (...any) -> (...any), ...any) -> thread;
+	delay: (duration: number?, func: (...any) -> (...any), ...any) -> thread;
+	cancel: (thread: thread) -> ();
 }
