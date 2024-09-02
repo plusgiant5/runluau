@@ -8,6 +8,7 @@ typedef struct {
 	lua_State* thread;
 	lua_State* from;
 	int args;
+	std::function<void()> setup_func;
 } resume_request_t;
 std::list<resume_request_t> threads_to_resume;
 
@@ -16,10 +17,10 @@ void scheduler::cycle() {
 	while (iterator != threads_to_resume.end()) {
 		resume_request_t request = *iterator;
 		//printf("With status %d\n", lua_status(request.thread));
-		luau::resume_and_handle_status(request.thread, request.from, request.args);
+		luau::resume_and_handle_status(request.thread, request.from, request.args, request.setup_func);
 		threads_to_resume.erase(iterator++);
 	}
 }
-void scheduler::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args) {
-	threads_to_resume.push_back({thread, from, args});
+void scheduler::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
+	threads_to_resume.push_back({thread, from, args, setup_func});
 }

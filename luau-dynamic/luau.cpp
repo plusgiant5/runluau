@@ -68,10 +68,10 @@ std::string beautify_stack_trace(std::string stack_trace) {
 API size_t luau::thread_count = 0;
 void userthread_callback(lua_State* parent_thread, lua_State* thread) {
 	if (parent_thread) {
-		printf("Thread created: %lld -> %lld\n", luau::thread_count, luau::thread_count + 1);
+		//printf("Thread created: %lld -> %lld\n", luau::thread_count, luau::thread_count + 1);
 		luau::thread_count++;
 	} else {
-		printf("Thread destroyed: %lld -> %lld\n", luau::thread_count, luau::thread_count - 1);
+		//printf("Thread destroyed: %lld -> %lld\n", luau::thread_count, luau::thread_count - 1);
 		luau::thread_count--;
 	}
 }
@@ -111,15 +111,18 @@ API void luau::load(lua_State* thread, const std::string& bytecode) {
 	}
 }
 lua_State* main_thread = nullptr;
-API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args) {
+API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
 	if (!main_thread) {
 		main_thread = thread;
 	}
-	scheduler::add_thread_to_resume_queue(thread, from, args);
+	scheduler::add_thread_to_resume_queue(thread, from, args, setup_func);
 }
-API void luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args) {
+API void luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
 	if (!from || lua_costatus(from, thread) == LUA_COSUS) {
+		//printf("Beginning\n");
+		setup_func();
 		int status = lua_resume(thread, from, args);
+		//printf("End\n");
 		switch (status) {
 		case LUA_OK: case LUA_YIELD: break;
 		case LUA_ERRRUN:
@@ -180,9 +183,6 @@ API void signal_yield_ready(HANDLE yield_ready_event) {
 	}
 }
 API void create_windows_thread_for_luau(lua_State* thread, void(*func)(lua_State* thread, HANDLE yield_ready_event, void* ud), void* ud) {
-	auto condition_variable = std::make_shared<std::condition_variable>();
-	auto mutex = std::make_shared<std::mutex>();
-	auto ready = std::make_shared<bool>(false);
 	HANDLE yield_ready_event = CreateEvent(nullptr, false, false, nullptr);
 	std::thread win_thread(func, thread, yield_ready_event, ud);
 	win_thread.detach();

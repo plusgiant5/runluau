@@ -2,7 +2,7 @@ LIBRARY "luau"
 EXPORTS
 	?load@luau@@YAXPEAUlua_State@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?thread_count@luau@@3_KA
-	?resume_and_handle_status@luau@@YAXPEAUlua_State@@0H@Z
+	?resume_and_handle_status@luau@@YAXPEAUlua_State@@0HV?$function@$$A6AXXZ@std@@@Z
 
 	?compile@CodeGen@Luau@@YA?AUCompilationResult@12@PEAUlua_State@@HAEBUCompilationOptions@12@PEAUCompilationStats@12@@Z
 	?create@CodeGen@Luau@@YAXPEAUlua_State@@@Z

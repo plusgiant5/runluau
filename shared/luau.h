@@ -8,8 +8,7 @@
 #include <Windows.h>
 
 #include <thread>
-#include <condition_variable>
-#include <mutex>
+#include <functional>
 
 #pragma push_macro("max")
 #undef max
@@ -28,9 +27,11 @@ namespace luau {
 	API lua_State* create_state();
 	API lua_State* create_thread(lua_State* thread);
 	API void load(lua_State* thread, const std::string& bytecode);
-	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args); // Must call this with main thread before starting scheduler, and within functions passed into `create_windows_thread_for_luau`
+	// Must call this with main thread before starting scheduler, and within functions passed into `create_windows_thread_for_luau`
+	// `setup_func` is to avoid desync when modifying the state before resuming, check `task.wait` for an example
+	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
 	API void start_scheduler();
-	API void resume_and_handle_status(lua_State* thread, lua_State* from, int args);
+	API void resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
 	API extern size_t thread_count;
 }
 
