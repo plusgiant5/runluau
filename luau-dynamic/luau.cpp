@@ -146,7 +146,7 @@ void luau::start_scheduler() {
 	}
 	LARGE_INTEGER frequency, start, end;
 	QueryPerformanceFrequency(&frequency);
-	LARGE_INTEGER gc_start, gc_end;
+	//LARGE_INTEGER gc_start, gc_end;
 	size_t i = 0;
 	while (true) {
 		QueryPerformanceCounter(&start);

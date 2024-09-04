@@ -72,11 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)luau\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(ShortProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)obj\$(ShortProjectName)\$(Configuration)\</IntDir>
     <TargetName>luau</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IntDir>$(SolutionDir)obj\$(ShortProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)obj\$(ShortProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)luau\$(Configuration)\</OutDir>
     <TargetName>luau</TargetName>
   </PropertyGroup>
@@ -130,7 +130,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>%LUAUSRC%\out\build\x64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Luau.CodeGen.lib;Luau.Ast.lib;Luau.Compiler.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -6,8 +6,9 @@
     <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>run KonstantCFV --args test ScrapedScripts O1g1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>build testinput.luau build.exe --plugins filesystem luau</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
   </PropertyGroup>
 </Project>

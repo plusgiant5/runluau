@@ -26,7 +26,7 @@ uintptr_t find_overlay_start() {
 	auto nt_header = (IMAGE_NT_HEADERS*)(base_address + dos_header->e_lfanew);
 	auto sections = (IMAGE_SECTION_HEADER*)((uintptr_t)(nt_header)+sizeof(*nt_header));
 	uintptr_t overlay_start = NULL;
-	for (size_t i = nt_header->FileHeader.NumberOfSections - 1; i >= 0 || nt_header->FileHeader.NumberOfSections == 0; i--) {
+	for (int i = nt_header->FileHeader.NumberOfSections - 1; i >= 0; i--) {
 		if (strcmp((char*)sections[i].Name, ".runluau") == 0) {
 			overlay_start = base_address + sections[i].VirtualAddress;
 			break;
@@ -34,7 +34,7 @@ uintptr_t find_overlay_start() {
 	}
 	if (overlay_start == NULL) {
 		printf("Failed to find .runluau section!\n");
-		return ERROR_FILE_CORRUPT;
+		exit(ERROR_FILE_CORRUPT);
 	}
 	return overlay_start;
 }
@@ -70,15 +70,14 @@ int main(int argc, char* argv[]) {
 	load_embedded_dll("luau.dll", (const char*)resource_buffer, resource_size);
 	std::vector<register_library_t> register_funcs;
 	for (size_t i = 0; i < plugins_count; i++) {
-		std::stringstream plugin_name_stream;
+		std::string plugin_name;
 		while (true) {
 			uint8_t character = *(uint8_t*)(current_offset++);
 			if (character == NULL) {
 				break;
 			}
-			plugin_name_stream << character;
+			plugin_name += character;
 		}
-		std::string plugin_name = plugin_name_stream.str();
 		//printf("Plugin `%s`\n", plugin_name.c_str());
 		size_t plugin_size = *(size_t*)(current_offset);
 		current_offset += sizeof(plugin_size);
@@ -91,40 +90,28 @@ int main(int argc, char* argv[]) {
 		register_funcs.push_back(register_library);
 		current_offset += plugin_size;
 	}
-	struct lua_State* state = luau::create_state();
+
+	lua_State* state = luau::create_state();
 	for (const auto& register_func : register_funcs) {
 		register_func(state);
 	}
+
 	luaL_sandbox(state);
+	lua_State* thread = luau::create_thread(state);
 
-	struct lua_State* thread = luau::create_thread(state);
-
-	int status = luau_load(thread, "=runluau", bytecode, bytecode_size, 0);
-	if (status != 0) [[unlikely]] {
-		if (status != 1) [[unlikely]] {
-			printf("Unknown luau_load status: %d\n", status);
-			exit(ERROR_INTERNAL_ERROR);
-		}
-		const char* error_message = lua_tostring(thread, 1);
-		printf("Syntax error:\n%s\n", error_message);
+	try {
+		luau::load(thread, std::string(bytecode, bytecode_size));
+	} catch (std::runtime_error error) {
+		printf("Failed to load bytecode: %s\n", error.what());
 		exit(ERROR_INTERNAL_ERROR);
 	}
 
 	for (const auto& arg : args) {
 		lua_pushlstring(thread, arg.data(), arg.size());
 	}
-	status = lua_resume(thread, NULL, (int)args.size());
+	luau::add_thread_to_resume_queue(thread, nullptr, (int)args.size());
+	luau::start_scheduler();
 
-	if (status != LUA_OK) [[unlikely]] {
-		printf("Script errored:\n");
-		if (status == LUA_YIELD) [[unlikely]] {
-			printf("Thread yielded unexpectedly\n");
-		} else if (const char* str = lua_tostring(thread, -1)) {
-			printf("%s\n", str);
-		}
-		printf("Stack trace:\n");
-		printf("%s\n", lua_debugtrace(thread));
-	}
 	lua_close(state);
 
 	return 0;
