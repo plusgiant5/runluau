@@ -1,8 +1,6 @@
 LIBRARY "luau"
 EXPORTS
-	?load@luau@@YAXPEAUlua_State@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?thread_count@luau@@3_KA
-	?resume_and_handle_status@luau@@YAXPEAUlua_State@@0HV?$function@$$A6AXXZ@std@@@Z
 
 	?compile@CodeGen@Luau@@YA?AUCompilationResult@12@PEAUlua_State@@HAEBUCompilationOptions@12@PEAUCompilationStats@12@@Z
 	?create@CodeGen@Luau@@YAXPEAUlua_State@@@Z
@@ -18,10 +16,12 @@ EXPORTS
 	lua_gettop
 	lua_settop
 	lua_pushnumber
+	lua_pushinteger
 	lua_pushstring
 	lua_pushboolean
 	lua_createtable
 	lua_settable
+	lua_newbuffer
 	lua_error
 	lua_pushlstring
 	lua_pushfstringL
@@ -36,6 +36,7 @@ EXPORTS
 	lua_rawiter
 	lua_encodepointer
 	lua_getinfo
+	lua_setfield
 	luaL_checklstring
 	luaL_checkunsigned
 	luaL_checktype
@@ -53,6 +54,10 @@ EXPORTS
 	lua_pushvalue
 	lua_yield
 	luaL_checknumber
+	luaL_checkinteger
+	luaL_checkboolean
+	luaL_checkbuffer
 	luaL_optnumber
+	luaL_optlstring
 	lua_pushthread
 	lua_pushlightuserdatatagged

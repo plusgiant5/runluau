@@ -12,7 +12,6 @@ namespace runluau {
 
 		std::optional<std::vector<std::string>> plugins = std::nullopt;
 	};
-	std::string compile(const std::string& source, settings& settings);
 	void execute_bytecode(const std::string& bytecode, settings& settings);
 	void execute(const std::string& source, settings& settings);
 }

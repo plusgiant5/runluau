@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 	lua_State* thread = luau::create_thread(state);
 
 	try {
-		luau::load(thread, std::string(bytecode, bytecode_size));
+		luau::load_and_handle_status(thread, std::string(bytecode, bytecode_size));
 	} catch (std::runtime_error error) {
 		printf("Failed to load bytecode: %s\n", error.what());
 		exit(ERROR_INTERNAL_ERROR);

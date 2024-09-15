@@ -14,9 +14,6 @@ lua_State* create_state() {
 	return state;
 }
 
-std::string runluau::compile(const std::string& source, settings& settings) {
-	return Luau::compile(source, { .optimizationLevel = settings.O, .debugLevel = settings.g, .vectorLib = "Vector3", .vectorCtor = "new" }, {});
-}
 void runluau::execute_bytecode(const std::string& bytecode, settings& settings) {
 	auto script_args = settings.script_args.value_or(std::vector<std::string>());
 
@@ -24,7 +21,7 @@ void runluau::execute_bytecode(const std::string& bytecode, settings& settings) 
 	lua_State* thread = luau::create_thread(state);
 
 	try {
-		luau::load(thread, bytecode);
+		luau::load_and_handle_status(thread, bytecode);
 	} catch (std::runtime_error error) {
 		printf("Failed to load bytecode: %s\n", error.what());
 		exit(ERROR_INTERNAL_ERROR);
@@ -39,5 +36,5 @@ void runluau::execute_bytecode(const std::string& bytecode, settings& settings) 
 	lua_close(state);
 }
 void runluau::execute(const std::string& source, settings& settings) {
-	execute_bytecode(compile(source, settings), settings);
+	execute_bytecode(luau::wrapped_compile(source, settings.O, settings.g), settings);
 }

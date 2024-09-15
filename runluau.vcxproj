@@ -122,6 +122,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>luau.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
+      <Message>Copying libs.</Message>
+      <Outputs>file that doesn't exist</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -148,6 +153,19 @@
       <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>luau.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
+      <Message>Copying libs.</Message>
+      <Outputs>file that doesn't exist</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="execute.cpp" />

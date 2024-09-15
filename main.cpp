@@ -8,6 +8,7 @@
 #include <fstream>
 #include <format>
 
+#include "file.hpp"
 #include "execute.h"
 #include "plugins.h"
 
@@ -30,73 +31,6 @@ Options:
 	exit(ERROR_INVALID_PARAMETER);
 }
 
-std::string read_file(const fs::path path) {
-	//printf("Attempt %s\n", path.string().c_str());
-	std::ifstream file(path, std::ios::binary);
-	if (!file) [[unlikely]] {
-		throw errno;
-	}
-	//printf("Ye\n");
-	std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	file.close();
-	return std::string(buffer.begin(), buffer.end());
-}
-std::string read_script(const std::string& path) {
-	try {
-		return read_file(path);
-	} catch (...) {
-		try {
-			return read_file(path + ".luau");
-		} catch (...) {
-			try {
-				return read_file(path + ".lua");
-			} catch (int err) {
-				if (err == ENOENT) {
-					printf("No script found at \"%s\"\n", path.c_str());
-					exit(ERROR_FILE_NOT_FOUND);
-				} else {
-					printf("Access denied when reading script \"%s\"\n", path.c_str());
-					exit(err);
-				}
-			}
-		}
-	}
-}
-// Path should not include the root `plugins` folder
-std::pair<std::string, std::string> read_plugin(const std::string& path) {
-	try {
-		return std::pair(read_file(path), fs::path(path).filename().string());
-	} catch (...) {
-		fs::path plugins_folder = get_plugins_folder();
-		try {
-			fs::path correct_path = path;
-			return std::pair(read_file(plugins_folder / correct_path), correct_path.filename().string());
-		} catch (...) {
-			try {
-				fs::path correct_path = "runluau-" + path;
-				return std::pair(read_file(plugins_folder / correct_path), correct_path.filename().string());
-			} catch (...) {
-				try {
-					fs::path correct_path = path + ".dll";
-					return std::pair(read_file(plugins_folder / correct_path), correct_path.filename().string());
-				} catch (...) {
-					try {
-						fs::path correct_path = "runluau-" + path + ".dll";
-						return std::pair(read_file(plugins_folder / correct_path), correct_path.filename().string());
-					} catch (int err) {
-						if (err == ENOENT) {
-							printf("No plugin found at \"%s\"\n", path.c_str());
-							exit(ERROR_FILE_NOT_FOUND);
-						} else {
-							printf("Access denied when reading plugin \"%s\"\n", path.c_str());
-							exit(err);
-						}
-					}
-				}
-			}
-		}
-	}
-}
 
 runluau::settings read_args(std::vector<std::string>& args, size_t starting_point) {
 	std::vector<std::string> script_args;
@@ -148,7 +82,10 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 	return settings;
 }
 
-BOOL __stdcall ctrl_handler(DWORD type) {
+inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
+	return (value + (alignment - 1)) & ~(alignment - 1);
+}
+BOOL WINAPI ctrl_handler(DWORD type) {
 	switch (type) {
 	case CTRL_C_EVENT:
 		printf("Exiting\n");
@@ -158,10 +95,6 @@ BOOL __stdcall ctrl_handler(DWORD type) {
 		return FALSE;
 	}
 }
-
-uintptr_t align(uintptr_t value, uintptr_t alignment) {
-	return (value + (alignment - 1)) & ~(alignment - 1);
-}
 int main(int argc, char* argv[]) {
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
 	std::vector<std::string> args(argv + 1, argv + argc);
@@ -169,22 +102,22 @@ int main(int argc, char* argv[]) {
 		help_then_exit("Not enough arguments.");
 	std::string mode = args[0];
 	if (mode == "run") {
-		std::string source = read_script(args[1]);
+		read_file_info script = read_script(args[1]);
 		runluau::settings settings = read_args(args, 2);
 		if (settings.plugins != std::nullopt) [[unlikely]]
 			help_then_exit("Cannot specify `--plugins` in `run` mode.");
 
-		runluau::execute(source, settings);
+		runluau::execute(script.contents, settings);
 	} else if (mode == "build") {
 		if (args.size() < 3) [[unlikely]]
 			help_then_exit("Not enough arguments.");
-		std::string source = read_script(args[1]);
+		std::string source = read_script(args[1]).contents;
 		fs::path output_path = args[2];
 		runluau::settings settings = read_args(args, 3);
 		if (settings.script_args != std::nullopt) [[unlikely]]
 			help_then_exit("Cannot specify `--args` in `build` mode.");
 
-		std::string bytecode = runluau::compile(source, settings);
+		std::string bytecode = luau::wrapped_compile(source, settings.O, settings.g);
 		if (bytecode[0] == '\0') {
 			printf("Syntax error:\n%s\n", bytecode.data() + 1);
 			return ERROR_INTERNAL_ERROR;
@@ -205,8 +138,8 @@ int main(int argc, char* argv[]) {
 			printf("Failed to LoadResource (0x%.8X)\n", last_error);
 			return last_error;
 		}
-		void* resource_buffer = LockResource(loaded);
-		void* template_exe_buffer = malloc(resource_size); // Copy because resource_buffer is intended to be readonly
+		void* resource_buffer = LockResource(loaded); // Readonly
+		void* template_exe_buffer = malloc(resource_size);
 		if (template_exe_buffer == NULL) {
 			printf("Allocation error (allocation size 0x%X)\n", resource_size);
 			return ERROR_OUTOFMEMORY;
@@ -253,9 +186,9 @@ int main(int argc, char* argv[]) {
 		output_file.write((char*)&plugins_count, sizeof(plugins_count));
 		for (std::string short_plugin_name : plugins) {
 			auto plugin_info = read_plugin(short_plugin_name);
-			std::string plugin_contents = plugin_info.first;
-			std::string plugin_name = plugin_info.second;
-			//printf("Plugin %s, size %llX\n", plugin_name.c_str(), plugin_contents.size());
+			std::string plugin_contents = plugin_info.contents;
+			std::string plugin_name = plugin_info.path.filename().string();
+			printf("Plugin %s, size %llX\n", plugin_name.c_str(), plugin_contents.size());
 			output_file << plugin_name << '\0';
 			size_t plugin_contents_size = plugin_contents.size();
 			output_file.write((char*)&plugin_contents_size, sizeof(plugin_contents_size));
@@ -275,8 +208,7 @@ int main(int argc, char* argv[]) {
 		}
 		uintptr_t section_end = output_file.tellp();
 		output_file.close();
-
-		// Create a section to point to the overlay
+		// Create section to point to the overlay
 		IMAGE_SECTION_HEADER* highest_section = nullptr;
 		for (size_t i = 0; i < nt_header->FileHeader.NumberOfSections; i++) {
 			if (highest_section) {
@@ -291,7 +223,6 @@ int main(int argc, char* argv[]) {
 			printf("Failed to find sections\n");
 			return ERROR_NOT_FOUND;
 		}
-
 		// Create a section to point to the overlay
 		WORD new_section_index = nt_header->FileHeader.NumberOfSections++;
 		IMAGE_SECTION_HEADER* next_section = &sections[new_section_index];
@@ -307,7 +238,6 @@ int main(int argc, char* argv[]) {
 		next_section->NumberOfLinenumbers = 0;
 		next_section->Characteristics = IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_INITIALIZED_DATA;
 		nt_header->OptionalHeader.SizeOfImage = (DWORD)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
-
 		// Add in the newly made section by overwriting the headers
 		std::fstream post_output_file(output_path, std::ios::binary | std::ios::in | std::ios::out);
 		if (!post_output_file) [[unlikely]] {
@@ -323,7 +253,5 @@ int main(int argc, char* argv[]) {
 	} else [[unlikely]] {
 		help_then_exit(std::format("Unknown mode `{}`.", mode));
 	}
-	//return ERROR_SUCCESS;
-	//while (true) {}
 	return 0;
 }

@@ -1,8 +1,9 @@
 #include "pch.h"
 
+#include "base_funcs.h"
 #include "scheduler.h"
 
-static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
+void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 	(void)ud;
 	(void)osize;
 	if (nsize == 0) {
@@ -12,13 +13,12 @@ static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 		return realloc(ptr, nsize);
 }
 
-std::string beautify_stack_trace(std::string stack_trace) {
+static std::string beautify_stack_trace(std::string stack_trace) {
 	std::string colored;
 	size_t current = 0;
 	while (current < stack_trace.size()) {
 		size_t newline = stack_trace.find_first_of('\n', current);
 		size_t colon = stack_trace.find_first_of(':', current);
-		//printf("%s\n", stack_trace.substr(current, 3).c_str());
 		if (stack_trace.substr(current, 3) == "[C]") {
 			size_t space = stack_trace.find_first_of(' ', current + 3);
 			size_t function = stack_trace.find_first_of(" function ", current + 3);
@@ -65,10 +65,22 @@ std::string beautify_stack_trace(std::string stack_trace) {
 	return colored.substr(0, colored.size() - 1) + RESET;
 }
 
+// So other compilations (like with require) respect the script args if specified
+bool set_specified = false;
+API std::string luau::wrapped_compile(const std::string& source, const int O, const int g) {
+	if (!set_specified) {
+		set_O_g(O, g);
+		set_specified = true;
+	}
+	return Luau::compile(source, {.optimizationLevel = O, .debugLevel = g, .vectorLib = "Vector3", .vectorCtor = "new"});
+}
+
+std::unordered_map<lua_State*, lua_State*> thread_to_parent;
 API size_t luau::thread_count = 0;
 void userthread_callback(lua_State* parent_thread, lua_State* thread) {
 	if (parent_thread) {
 		//printf("Thread created: %lld -> %lld\n", luau::thread_count, luau::thread_count + 1);
+		thread_to_parent.insert({thread, parent_thread});
 		luau::thread_count++;
 	} else {
 		//printf("Thread destroyed: %lld -> %lld\n", luau::thread_count, luau::thread_count - 1);
@@ -77,8 +89,13 @@ void userthread_callback(lua_State* parent_thread, lua_State* thread) {
 }
 void set_callbacks(lua_State* thread) {
 	lua_Callbacks* callbacks = lua_callbacks(thread);
-	//printf("Existing: %p\n", callbacks->userthread);
 	callbacks->userthread = userthread_callback;
+}
+API lua_State* luau::get_parent_state(lua_State* child) {
+	if (thread_to_parent.find(child) == thread_to_parent.end()) {
+		return nullptr;
+	}
+	return thread_to_parent.at(child);
 }
 
 API lua_State* luau::create_state() {
@@ -87,16 +104,16 @@ API lua_State* luau::create_state() {
 	if (Luau::CodeGen::isSupported()) {
 		Luau::CodeGen::create(state);
 	}
+	register_base_funcs(state);
 	luaL_openlibs(state);
 	return state;
 }
 API lua_State* luau::create_thread(lua_State* thread) {
 	lua_State* new_thread = lua_newthread(thread);
-	//luaL_sandboxthread(thread);
 	return new_thread;
 }
-API void luau::load(lua_State* thread, const std::string& bytecode) {
-	int status = luau_load(thread, "=runluau", bytecode.data(), bytecode.size(), 0);
+API void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name) {
+	int status = luau_load(thread, ("=" + chunk_name).c_str(), bytecode.data(), bytecode.size(), 0);
 	if (status != 0) [[unlikely]] {
 		if (status != 1) [[unlikely]] {
 			throw std::runtime_error(std::format("Unknown luau_load status `{}`\n", status));
@@ -117,12 +134,12 @@ API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, in
 	}
 	scheduler::add_thread_to_resume_queue(thread, from, args, setup_func);
 }
-API void luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
-	if (!from || lua_costatus(from, thread) == LUA_COSUS) {
-		//printf("Beginning\n");
+API bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
+	if (lua_status(thread) == LUA_YIELD || lua_costatus(from, thread) == LUA_COSUS) {
+		//printf("Beginning %d %d\n", lua_status(thread), lua_costatus(from, thread));
 		setup_func();
 		int status = lua_resume(thread, from, args);
-		//printf("End\n");
+		//printf("End %d %d\n", status, lua_costatus(from, thread));
 		switch (status) {
 		case LUA_OK: case LUA_YIELD: break;
 		case LUA_ERRRUN:
@@ -134,7 +151,9 @@ API void luau::resume_and_handle_status(lua_State* thread, lua_State* from, int 
 		if (status != LUA_YIELD || (from && lua_costatus(from, thread) == LUA_COSUS)) {
 			lua_resetthread(thread);
 		}
+		return true;
 	}
+	return false;
 }
 
 void luau::start_scheduler() {
@@ -175,15 +194,15 @@ void luau::start_scheduler() {
 	//printf("Scheduler stopped\n");
 }
 
-API void signal_yield_ready(HANDLE yield_ready_event) {
+API void signal_yield_ready(yield_ready_event_t yield_ready_event) {
 	if (!SetEvent(yield_ready_event)) {
 		DWORD error = GetLastError();
 		printf("Failed to SetEvent: %d\n", error);
 		exit(error);
 	}
 }
-API void create_windows_thread_for_luau(lua_State* thread, void(*func)(lua_State* thread, HANDLE yield_ready_event, void* ud), void* ud) {
-	HANDLE yield_ready_event = CreateEvent(nullptr, false, false, nullptr);
+API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud) {
+	yield_ready_event_t yield_ready_event = CreateEvent(nullptr, false, false, nullptr);
 	std::thread win_thread(func, thread, yield_ready_event, ud);
 	win_thread.detach();
 	WaitForSingleObject(yield_ready_event, INFINITE);

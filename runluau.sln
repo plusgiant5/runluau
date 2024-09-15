@@ -19,6 +19,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{ED260E08-3AF3-452A-A014-25B6888F130C}"
 	ProjectSection(SolutionItems) = preProject
 		shared\colors.h = shared\colors.h
+		shared\file.hpp = shared\file.hpp
 		shared\luau.h = shared\luau.h
 	EndProjectSection
 EndProject

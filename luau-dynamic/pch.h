@@ -5,6 +5,7 @@
 #include <list>
 #include <format>
 #include <thread>
+#include <mutex>
 
 #include "colors.h"
 
