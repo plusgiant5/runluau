@@ -1,6 +1,6 @@
 # The Modular Luau Runtime
 
-## How to Build
+## How To Build
 1. Clone [Luau](https://github.com/luau-lang/luau) using Visual Studio.
 2. Set the Windows environment variable `%LUAUSRC%` to the path to the cloned Luau repo.
 3. Clone runluau (this repo) using Visual Studio.
