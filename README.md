@@ -1,4 +1,5 @@
 # The Modular Luau Runtime
+Fast, small, simple, intended to be modified.
 
 ## How To Build
 1. Clone [Luau](https://github.com/luau-lang/luau) using Visual Studio.
