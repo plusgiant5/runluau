@@ -12,9 +12,9 @@ typedef struct {
 } resume_request_t;
 std::list<resume_request_t> threads_to_resume;
 
-std::mutex list_mutex;
+std::recursive_mutex list_mutex;
 void scheduler::cycle() {
-	std::lock_guard<std::mutex> lock(list_mutex);
+	std::lock_guard<std::recursive_mutex> lock(list_mutex);
 	std::list<resume_request_t>::iterator iterator = threads_to_resume.begin();
 	while (iterator != threads_to_resume.end()) {
 		resume_request_t request = *iterator;
@@ -25,6 +25,6 @@ void scheduler::cycle() {
 	}
 }
 void scheduler::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
-	std::lock_guard<std::mutex> lock(list_mutex);
+	std::lock_guard<std::recursive_mutex> lock(list_mutex);
 	threads_to_resume.push_back({thread, from, args, setup_func});
 }

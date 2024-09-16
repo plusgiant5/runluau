@@ -23,6 +23,9 @@ EXPORTS
 	lua_settable
 	lua_newbuffer
 	lua_error
+	lua_ref
+	lua_unref
+	lua_rawgeti
 	lua_pushlstring
 	lua_pushfstringL
 	lua_tolstring
