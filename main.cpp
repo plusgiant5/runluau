@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <Windows.h>
+#include <platform.hpp>
 
 #include <cerrno>
 #include <string>

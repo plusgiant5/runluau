@@ -2,6 +2,7 @@
 
 #define SCHEDULER_RATE 60
 
+#include "platform/agnostic.hpp"
 #include <thread>
 #include <functional>
 #include <filesystem>
@@ -14,10 +15,16 @@ namespace fs = std::filesystem;
 #include <Luau/Compiler.h>
 #include <lualib.h>
 
-#ifdef PROJECT_EXPORTS
-#define API __declspec(dllexport)
+#ifdef _MSVC_VER
+#define COMPILER_DECLSPEC(x) __declspec(x)
 #else
-#define API __declspec(dllimport)
+#define COMPILER_DECLSPEC(x) __attribute__((x))
+#endif
+
+#ifdef PROJECT_EXPORTS
+#define API COMPILER_DECLSPEC(dllexport)
+#else
+#define API COMPILER_DECLSPEC(dllimport)
 #endif
 
 namespace luau {
@@ -42,7 +49,7 @@ if (n > 0 && lua_gettop(thread) < n) [[unlikely]] { \
 }
 
 // Yielding for custom functions
-typedef HANDLE yield_ready_event_t;
+typedef PLATFORM_HANDLE yield_ready_event_t;
 typedef void(*yield_thread_func_t)(lua_State* thread, yield_ready_event_t yield_ready_event, void* ud);
 API void signal_yield_ready(yield_ready_event_t yield_ready_event);
 API void create_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud = nullptr);
