@@ -10,3 +10,6 @@ Fast, small, simple, intended to be modified.
 6. For your first build, build Luau first, then runluau, then runluau-plugins. After, you can do any in any order.
 7. Use in the `out` folder.
 8. Segmentation fault
+
+## Linux/Mac Support?
+Would be a very difficult feat, as the plugins system is based off loading DLLs, and the build system generates Windows executables.
