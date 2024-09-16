@@ -1,7 +1,5 @@
 #include "execute.h"
 
-#include <Windows.h>
-
 #include "colors.h"
 #include "plugins.h"
 

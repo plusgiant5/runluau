@@ -201,7 +201,7 @@ API void signal_yield_ready(yield_ready_event_t yield_ready_event) {
 		exit(error);
 	}
 }
-API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud) {
+API void create_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud) {
 	yield_ready_event_t yield_ready_event = CreateEvent(nullptr, false, false, nullptr);
 	std::thread win_thread(func, thread, yield_ready_event, ud);
 	win_thread.detach();
