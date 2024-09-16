@@ -137,6 +137,7 @@ API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, in
 API bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
 	if (lua_status(thread) == LUA_YIELD || lua_costatus(from, thread) == LUA_COSUS) {
 		//printf("Beginning %d %d\n", lua_status(thread), lua_costatus(from, thread));
+		lua_setreadonly(thread, LUA_GLOBALSINDEX, false);
 		setup_func();
 		int status = lua_resume(thread, from, args);
 		//printf("End %d %d\n", status, lua_costatus(from, thread));
