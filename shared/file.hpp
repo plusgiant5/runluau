@@ -90,9 +90,6 @@ read_file_info read_require(const std::string& path) {
 			possible_paths.push_back(path + suffix);
 			possible_paths.push_back(get_parent_folder() / (path + suffix));
 		}
-		for (const auto& path : possible_paths) {
-			puts(path.string().c_str());
-		}
 		return read_paths(possible_paths);
 	} catch (int err) {
 		if (err == ENOENT) {
