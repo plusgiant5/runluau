@@ -36,13 +36,14 @@ declare task: {
 
 
 -- graphics
-type event_type = "todo"
 type event = {
-	type: event_type;
+	type: "test";
 }
+type event_type = typeof(({} :: event).type)
 declare gfx: {
 	create_window: (width: number, height: number, title: string?) -> buffer;
+	window_exists: (fb: buffer) -> boolean;
 	render: (fb: buffer) -> ();
-	set_window_size: (fb: buffer, width: number, height: number) -> ();
 	get_window_events: (fb: buffer) -> {event};
+	set_window_size: (fb: buffer, width: number, height: number) -> ();
 }

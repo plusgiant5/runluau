@@ -26,28 +26,38 @@ int require(lua_State* thread) {
 	std::string bytecode = luau::wrapped_compile(module_info.contents, specified_O, specified_g);
 	luau::load_and_handle_status(module_thread, bytecode, module_info.path.filename().string());
 
-	int status = lua_resume(module_thread, thread, 0);
-
-	const char* error = nullptr;
-	if (status == 0) {
-		if (lua_gettop(module_thread) == 0) {
-			error = "module must return a value";
+	std::optional<std::string> error = std::nullopt;
+	int status = lua_resume(module_thread, NULL, 0);
+	switch (status) {
+	case LUA_OK:
+		if (lua_gettop(module_thread) != 1) {
+			error = std::format("Module `{}` must return exactly one value", path);
 		} else if (!lua_istable(module_thread, -1) && !lua_isfunction(module_thread, -1)) {
-			error = "module must return a table or function";
+			error = std::format("Module `{}` must return a table or function", path);
 		}
-	} else if (status == LUA_YIELD) {
-		error = "module can not yield";
-	} else if (!lua_isstring(module_thread, -1)) {
-		error = "unknown error while running module";
+		break;
+	case LUA_YIELD:
+		error = std::format("Module `{}` yielded on require", path);
+		break;
+	case LUA_ERRRUN:
+	{
+		luau::on_thread_error(module_thread);
+		error = std::format("Module `{}` errored on require", path);
+		break;
+	}	
+	default:
+		break;
 	}
-	if (error) {
-		lua_pushstring(module_thread, error);
+	if (error.has_value()) {
+		lua_pushstring(thread, error.value().c_str());
 		lua_error(thread);
-		return 0;
+		return 1;
 	}
 
 	lua_xmove(module_thread, thread, 1);
 	lua_pushvalue(thread, -1);
+
+	lua_resetthread(module_thread);
 
 	return 1;
 }

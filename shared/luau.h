@@ -9,6 +9,7 @@
 
 #include <thread>
 #include <functional>
+#include <mutex>
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -26,6 +27,7 @@ namespace fs = std::filesystem;
 #endif
 
 namespace luau {
+	API extern std::recursive_mutex luau_operation_mutex;
 	API lua_State* create_state();
 	API lua_State* create_thread(lua_State* thread);
 	API void load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name = "runluau");
@@ -36,6 +38,10 @@ namespace luau {
 	API bool resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
 	API extern size_t thread_count;
 	API void start_scheduler();
+	API const char* get_error_message(lua_State* thread);
+	API const char* get_stack_trace(lua_State* thread);
+	API std::string beautify_stack_trace(std::string stack_trace);
+	API void on_thread_error(lua_State* thread);
 	API std::string wrapped_compile(const std::string& source, const int O, const int g);
 }
 
