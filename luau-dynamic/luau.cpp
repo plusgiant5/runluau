@@ -193,7 +193,7 @@ void luau::start_scheduler() {
 		scheduler::cycle();
 		QueryPerformanceCounter(&end);
 		//QueryPerformanceCounter(&gc_start);
-		//lua_gc(main_thread, LUA_GCSTEP, 1000);
+		lua_gc(main_thread, LUA_GCSTEP, 1000);
 		//QueryPerformanceCounter(&gc_end);
 		//printf("GC in %f\n", static_cast<double>(gc_end.QuadPart - gc_start.QuadPart) / frequency.QuadPart);
 		if (luau::thread_count <= 1) {
@@ -211,7 +211,7 @@ void luau::start_scheduler() {
 			WaitForSingleObject(timer, INFINITE);
 		}
 	}
-	printf("Scheduler stopped\n");
+	//printf("Scheduler stopped\n");
 }
 
 __declspec(dllexport) void signal_yield_ready(yield_ready_event_t yield_ready_event) {
