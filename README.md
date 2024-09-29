@@ -12,3 +12,6 @@ Fast, small, simple, intended to be modified.
 
 ## Linux/Mac Support?
 Would be a very difficult feat, as the plugins system is based off loading DLLs, and the build system generates Windows executables.
+
+## Command Line Arguments
+You can read the arguments passed into a Luau script simply by using `...` in the global scope. It will be a tuple of strings.
