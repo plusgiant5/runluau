@@ -14,7 +14,7 @@ declare fs: {
 
 
 -- luau
-type luau_compiler_settings = {
+export type luau_compiler_settings = {
 	optimizationLevel: number?;
 	debugLevel: number?;
 }
@@ -36,7 +36,7 @@ declare task: {
 
 
 -- graphics
-type gfx_input_type =
+export type gfx_input_type =
 				| "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 				| "A"| "B"| "C"| "D"| "E"| "F"| "G"| "H"| "I"| "J"| "K"| "L"| "M"| "N"| "O"| "P"| "Q"| "R"| "S"| "T"| "U"| "V"| "W"| "X"| "Y"| "Z"
 				| "Space" | "Tab"
@@ -55,12 +55,12 @@ type gfx_input_type =
 				| "Execute" | "Print" | "Help" | "Sleep" | "PrintScreen" | "Pause"
 				| "Semicolon" | "Plus" | "Minus" | "Comma" | "Period" | "Slash" | "Tilde" | "OpenBracket" | "CloseBracket" | "Backslash" | "Quote"
 				| "LeftMouseButton" | "RightMouseButton" | "MiddleMouseButton" | "XButton1" | "XButton2"
-type gfx_event = {
+export type gfx_event = {
 	event_type: "input";
 	down: boolean;
 	input: gfx_input_type;
 }
-type gfx_event_type = typeof(({} :: gfx_event).event_type)
+export type gfx_event_type = typeof(({} :: gfx_event).event_type)
 declare gfx: {
 	create_window: (width: number, height: number, title: string?, pixel_size: number?) -> buffer;
 	window_exists: (fb: buffer) -> boolean;
