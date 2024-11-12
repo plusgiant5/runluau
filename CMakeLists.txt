@@ -8,9 +8,18 @@ elseif(WIN32)
 endif()
 
 include_directories(shared)
-# TODO: not working lol
-add_library(Luau.Compiler STATIC IMPORTED)
-add_library(Luau STATIC IMPORTED)
+
+
+# Add Luau submodule as a subdirectory
+add_subdirectory(Luau ${CMAKE_BINARY_DIR}/_deps/Luau)
+
+# Include Luau directories (adjust as needed)
+include_directories(Luau/VM/include)
+include_directories(Luau/Ast/include)
+include_directories(Luau/Compiler/include)
 
 # Add your source files
 add_executable(runluau main.cpp execute.cpp plugins.cpp)
+
+# Link against Luau libraries
+target_link_libraries(runluau PRIVATE Luau.VM Luau.Compiler Luau.Analysis)
