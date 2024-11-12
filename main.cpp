@@ -5,6 +5,10 @@
 #include <unistd.h>
 #endif
 
+#ifndef _WIN32
+    #define ERROR_INVALID_PARAMETER EINVAL
+#endif
+
 #include <cerrno>
 #include <string>
 #include <vector>
