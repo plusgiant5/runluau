@@ -24,6 +24,11 @@ const fs::path get_self_path() {
 #endif
 }
 
+struct read_file_info {
+	std::string contents;
+	fs::path path;
+};
+
 fs::path get_parent_folder() {
 	return get_self_path().parent_path();
 }
