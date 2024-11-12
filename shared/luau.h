@@ -47,9 +47,9 @@ namespace luau {
 	API void load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name = "runluau");
 	// Must call this with main thread before starting scheduler, and within functions passed into `create_windows_thread_for_luau`
 	// `setup_func` is to avoid desync when modifying the state before resuming, check `task.wait` for an example
-	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
+	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [](){});
 	API lua_State* get_parent_state(lua_State* child);
-	API bool resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
+	API bool resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [](){});
 	API extern size_t thread_count;
 	API void start_scheduler();
 	API const char* get_error_message(lua_State* thread);
