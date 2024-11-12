@@ -3,22 +3,27 @@
 #include <string>
 #include <filesystem>
 namespace fs = std::filesystem;
-#include <fstream>
 
+#ifdef _WIN32
 #include <Windows.h>
-
+#else
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
 #define PLUGINS_FOLDER_NAME "plugins"
 
-struct read_file_info {
-	std::string contents;
-	fs::path path;
-};
-
 const fs::path get_self_path() {
+#ifdef _WIN32
 	wchar_t self_path[1024];
 	GetModuleFileNameW(NULL, self_path, 1024);
 	return fs::path(self_path);
+#else
+	char self_path[1024];
+	readlink("/proc/self/exe", self_path, sizeof(self_path));
+	return fs::path(self_path);
+#endif
 }
+
 fs::path get_parent_folder() {
 	return get_self_path().parent_path();
 }
@@ -71,7 +76,18 @@ read_file_info read_script(const std::string& path) {
 read_file_info read_plugin(const std::string& path) {
 	fs::path plugins_folder = get_plugins_folder();
 	try {
-		return read_paths({path, plugins_folder / path, plugins_folder / ("runluau-" + path), plugins_folder / (path + ".dll"), plugins_folder / ("runluau-" + path + ".dll")});
+		return read_paths({
+			path,
+			plugins_folder / path,
+			plugins_folder / ("runluau-" + path),
+#ifdef _WIN32
+			plugins_folder / (path + ".dll"),
+			plugins_folder / ("runluau-" + path + ".dll")
+#else
+			plugins_folder / (path + ".so"),
+			plugins_folder / ("runluau-" + path + ".so")
+#endif
+		});
 	} catch (int err) {
 		if (err == ENOENT) {
 			printf("No plugin found at \"%s\"\n", path.c_str());
