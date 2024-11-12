@@ -25,9 +25,19 @@ namespace fs = std::filesystem;
 #include <lualib.h>
 
 #ifdef PROJECT_EXPORTS
+// https://stackoverflow.com/a/78330763
+#if defined(_MSC_VER) && !defined(__clang__)
 #define API __declspec(dllexport)
 #else
+#error "TODO: Add support for non-MSVC compilers with PROJECT_EXPORTS"
+#endif
+#else
+// https://stackoverflow.com/a/78330763
+#if defined(_MSC_VER) && !defined(__clang__)
 #define API __declspec(dllimport)
+#else
+#define API __attribute__((visibility("default")))
+#endif
 #endif
 
 namespace luau {
@@ -57,7 +67,7 @@ if (n > 0 && lua_gettop(thread) < n) [[unlikely]] { \
 }
 
 // Yielding for custom functions
-typedef HANDLE yield_ready_event_t;
+typedef void* yield_ready_event_t;
 typedef void(*yield_thread_func_t)(lua_State* thread, yield_ready_event_t yield_ready_event, void* ud);
 API void signal_yield_ready(yield_ready_event_t yield_ready_event);
 API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud = nullptr);
