@@ -179,7 +179,7 @@ __declspec(dllexport) bool luau::resume_and_handle_status(lua_State* thread, lua
 void luau::start_scheduler() {
 	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
 	if (!timer) {
-		DWORD error = GetLastError();
+		unsigned long error = GetLastError();
 		printf("Failed to CreateWaitableTimer: %d\n", error);
 		exit(error);
 	}
@@ -216,7 +216,7 @@ void luau::start_scheduler() {
 
 __declspec(dllexport) void signal_yield_ready(yield_ready_event_t yield_ready_event) {
 	if (!SetEvent(yield_ready_event)) {
-		DWORD error = GetLastError();
+		unsigned long error = GetLastError();
 		printf("Failed to SetEvent: %d\n", error);
 		exit(error);
 	}
@@ -228,6 +228,6 @@ __declspec(dllexport) void create_windows_thread_for_luau(lua_State* thread, yie
 	WaitForSingleObject(yield_ready_event, INFINITE);
 }
 
-bool APIENTRY DllMain(HMODULE, DWORD reason, void* reserved) {
+bool APIENTRY DllMain(HMODULE, unsigned long reason, void* reserved) {
 	return true;
 }

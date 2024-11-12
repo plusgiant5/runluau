@@ -89,7 +89,7 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
 	return (value + (alignment - 1)) & ~(alignment - 1);
 }
-BOOL WINAPI ctrl_handler(DWORD type) {
+BOOL WINAPI ctrl_handler(unsigned long type) {
 	switch (type) {
 	case CTRL_C_EVENT:
 		printf("Exiting\n");
@@ -131,14 +131,14 @@ int main(int argc, char* argv[]) {
 		HMODULE self_handle = GetModuleHandleW(NULL);
 		HRSRC resource_handle = FindResourceA(self_handle, MAKEINTRESOURCEA(101), "BINARY");
 		if (!resource_handle) [[unlikely]] {
-			DWORD last_error = GetLastError();
+			unsigned long last_error = GetLastError();
 			printf("Failed to FindResourceA (0x%.8X)\n", last_error);
 			return last_error;
 		}
 		HGLOBAL loaded = LoadResource(self_handle, resource_handle);
-		DWORD resource_size = SizeofResource(self_handle, resource_handle);
+		unsigned long resource_size = SizeofResource(self_handle, resource_handle);
 		if (!loaded) [[unlikely]] {
-			DWORD last_error = GetLastError();
+			unsigned long last_error = GetLastError();
 			printf("Failed to LoadResource (0x%.8X)\n", last_error);
 			return last_error;
 		}
@@ -169,8 +169,8 @@ int main(int argc, char* argv[]) {
 		auto dos_header = (IMAGE_DOS_HEADER*)(template_exe_buffer);
 		auto nt_header = (IMAGE_NT_HEADERS*)((uintptr_t)template_exe_buffer + dos_header->e_lfanew);
 		auto sections = (IMAGE_SECTION_HEADER*)((uintptr_t)(nt_header)+sizeof(*nt_header));
-		DWORD file_alignment = nt_header->OptionalHeader.FileAlignment;
-		DWORD section_alignment = nt_header->OptionalHeader.SectionAlignment;
+		unsigned long file_alignment = nt_header->OptionalHeader.FileAlignment;
+		unsigned long section_alignment = nt_header->OptionalHeader.SectionAlignment;
 
 		// Writing the overlay
 		// The length of the bytecode, followed by the bytecode
