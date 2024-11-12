@@ -7,5 +7,6 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWINDOWS")
 endif()
 
+include_directories(shared)
 # Add your source files
 add_executable(runluau main.cpp execute.cpp plugins.cpp)
