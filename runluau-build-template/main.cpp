@@ -51,14 +51,22 @@ int main(int argc, char* argv[]) {
 	HMODULE self_handle = GetModuleHandleW(NULL);
 	HRSRC resource_handle = FindResourceA(self_handle, MAKEINTRESOURCEA(101), "BINARY");
 	if (!resource_handle) [[unlikely]] {
+		#ifdef _WIN32
 		unsigned long last_error = GetLastError();
+		#else
+		int last_error = errno;
+		#endif
 		printf("Failed to FindResourceA (0x%.8X)\n", last_error);
 		return last_error;
 	}
 	HGLOBAL loaded = LoadResource(self_handle, resource_handle);
 	unsigned long resource_size = SizeofResource(self_handle, resource_handle);
 	if (!loaded) [[unlikely]] {
+		#ifdef _WIN32
 		unsigned long last_error = GetLastError();
+		#else
+		int last_error = errno;
+		#endif
 		printf("Failed to LoadResource (0x%.8X)\n", last_error);
 		return last_error;
 	}
