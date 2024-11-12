@@ -59,6 +59,9 @@ export type gfx_event = {
 	event_type: "input";
 	down: boolean;
 	input: gfx_input_type;
+} | {
+	event_type: "scroll";
+	delta: number;
 }
 export type gfx_event_type = typeof(({} :: gfx_event).event_type)
 declare gfx: {
@@ -67,4 +70,5 @@ declare gfx: {
 	render: (fb: buffer) -> ();
 	get_window_events: (fb: buffer) -> {gfx_event};
 	set_window_size: (fb: buffer, width: number, height: number) -> ();
+	get_cursor_position: (fb: buffer) -> (number, number);
 }

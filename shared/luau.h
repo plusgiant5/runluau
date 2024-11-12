@@ -1,6 +1,6 @@
 #pragma once
 
-#define SCHEDULER_RATE 60
+#define SCHEDULER_RATE 240
 
 
 
