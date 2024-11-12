@@ -14,12 +14,13 @@ include_directories(shared)
 add_subdirectory(Luau ${CMAKE_BINARY_DIR}/_deps/Luau)
 
 # Include Luau directories (adjust as needed)
-include_directories(Luau/VM/include)
-include_directories(Luau/Ast/include)
 include_directories(Luau/Compiler/include)
+include_directories(Luau/Ast/include)
+include_directories(Luau/CodeGen/include)
+include_directories(Luau/Common/include)
 
 # Add your source files
 add_executable(runluau main.cpp execute.cpp plugins.cpp)
 
 # Link against Luau libraries
-target_link_libraries(runluau PRIVATE Luau.VM Luau.Compiler Luau.Analysis)
+target_link_libraries(runluau Luau)
