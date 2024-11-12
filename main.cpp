@@ -3,6 +3,8 @@
 #include <Windows.h>
 #else
 #include <unistd.h>
+#include <csignal>
+#include <signal.h>
 #endif
 
 #ifndef _WIN32
@@ -94,18 +96,34 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
 	return (value + (alignment - 1)) & ~(alignment - 1);
 }
+#ifdef _WIN32
 BOOL WINAPI ctrl_handler(unsigned long type) {
+#else
+int ctrl_handler(int type) {
+#endif
 	switch (type) {
+	#ifdef _WIN32
 	case CTRL_C_EVENT:
+	#else
+	case SIGINT:
+	#endif
 		printf("Exiting\n");
+		#ifdef _WIN32
 		__fastfail(ERROR_PROCESS_ABORTED);
-		return TRUE;
+		#else
+		raise(SIGABRT);
+		#endif
+		return 1;
 	default:
-		return FALSE;
+		return 0;
 	}
 }
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+#else
+	signal(SIGINT, (void(*)(int))ctrl_handler);
+#endif
 	std::vector<std::string> args(argv + 1, argv + argc);
 	if (args.size() < 2) [[unlikely]]
 		help_then_exit("Not enough arguments.");
