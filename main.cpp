@@ -236,16 +236,16 @@ int main(int argc, char* argv[]) {
 		IMAGE_SECTION_HEADER* next_section = &sections[new_section_index];
 		size_t new_section_size = section_end - section_start;
 		memcpy(&next_section->Name, ".runluau", 8);
-		next_section->Misc.VirtualSize = static_cast<DWORD>(new_section_size);
-		next_section->VirtualAddress = (DWORD)align(highest_section->VirtualAddress + highest_section->Misc.VirtualSize, section_alignment);
-		next_section->SizeOfRawData = (DWORD)align(new_section_size, file_alignment);
-		next_section->PointerToRawData = highest_section->PointerToRawData + (DWORD)align(highest_section->SizeOfRawData, file_alignment);
+		next_section->Misc.VirtualSize = static_cast<unsigned long>(new_section_size);
+		next_section->VirtualAddress = (unsigned long)align(highest_section->VirtualAddress + highest_section->Misc.VirtualSize, section_alignment);
+		next_section->SizeOfRawData = (unsigned long)align(new_section_size, file_alignment);
+		next_section->PointerToRawData = highest_section->PointerToRawData + (unsigned long)align(highest_section->SizeOfRawData, file_alignment);
 		next_section->PointerToRelocations = NULL;
 		next_section->PointerToLinenumbers = NULL;
 		next_section->NumberOfRelocations = 0;
 		next_section->NumberOfLinenumbers = 0;
 		next_section->Characteristics = IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_INITIALIZED_DATA;
-		nt_header->OptionalHeader.SizeOfImage = (DWORD)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
+		nt_header->OptionalHeader.SizeOfImage = (unsigned long)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
 		// Add in the newly made section by overwriting the headers
 		std::fstream post_output_file(output_path, std::ios::binary | std::ios::in | std::ios::out);
 		if (!post_output_file) [[unlikely]] {
