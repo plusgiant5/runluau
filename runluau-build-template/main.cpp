@@ -1,4 +1,8 @@
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 #include <stdio.h>
 #include <shlobj.h>
 

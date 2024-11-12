@@ -4,7 +4,11 @@
 #include <unordered_set>
 #include <stack>
 #include <vector>
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 typedef void(__fastcall* register_library_t)(lua_State* state);
 typedef const char**(__fastcall* get_dependencies_t)();

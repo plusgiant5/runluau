@@ -1,6 +1,10 @@
 #include "execute.h"
 
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "colors.h"
 #include "plugins.h"
