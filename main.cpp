@@ -7,13 +7,6 @@
 #include <signal.h>
 #endif
 
-#ifndef _WIN32
-    #define ERROR_INVALID_PARAMETER EINVAL
-	#define ERROR_INTERNAL_ERROR EIO
-	#define ERROR_NOT_FOUND ENOENT
-	#define ERROR_OUTOFMEMORY ENOMEM
-#endif
-
 #include <cerrno>
 #include <string>
 #include <vector>
@@ -25,6 +18,7 @@
 #include "execute.h"
 #include "plugins.h"
 #include "luau.h"
+#include "errors.h"
 
 void help_then_exit(std::string notice_message) {
 	printf(R"(%s Help is below:
