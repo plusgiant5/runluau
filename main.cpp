@@ -1,5 +1,11 @@
 #include <stdio.h>
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#include <csignal>
+#include <signal.h>
+#endif
 
 #include <cerrno>
 #include <string>
@@ -8,9 +14,11 @@
 #include <fstream>
 #include <format>
 
+#include "errors.h"
 #include "file.hpp"
 #include "execute.h"
 #include "plugins.h"
+#include "luau.h"
 
 void help_then_exit(std::string notice_message) {
 	printf(R"(%s Help is below:
@@ -85,18 +93,34 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
 	return (value + (alignment - 1)) & ~(alignment - 1);
 }
-BOOL WINAPI ctrl_handler(DWORD type) {
+#ifdef _WIN32
+BOOL WINAPI ctrl_handler(unsigned long type) {
+#else
+int ctrl_handler(int type) {
+#endif
 	switch (type) {
+	#ifdef _WIN32
 	case CTRL_C_EVENT:
+	#else
+	case SIGINT:
+	#endif
 		printf("Exiting\n");
+		#ifdef _WIN32
 		__fastfail(ERROR_PROCESS_ABORTED);
-		return TRUE;
+		#else
+		raise(SIGABRT);
+		#endif
+		return 1;
 	default:
-		return FALSE;
+		return 0;
 	}
 }
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+#else
+	signal(SIGINT, (void(*)(int))ctrl_handler);
+#endif
 	std::vector<std::string> args(argv + 1, argv + argc);
 	if (args.size() < 2) [[unlikely]]
 		help_then_exit("Not enough arguments.");
@@ -127,14 +151,14 @@ int main(int argc, char* argv[]) {
 		HMODULE self_handle = GetModuleHandleW(NULL);
 		HRSRC resource_handle = FindResourceA(self_handle, MAKEINTRESOURCEA(101), "BINARY");
 		if (!resource_handle) [[unlikely]] {
-			DWORD last_error = GetLastError();
+			unsigned long last_error = GetLastError();
 			printf("Failed to FindResourceA (0x%.8X)\n", last_error);
 			return last_error;
 		}
 		HGLOBAL loaded = LoadResource(self_handle, resource_handle);
-		DWORD resource_size = SizeofResource(self_handle, resource_handle);
+		unsigned long resource_size = SizeofResource(self_handle, resource_handle);
 		if (!loaded) [[unlikely]] {
-			DWORD last_error = GetLastError();
+			unsigned long last_error = GetLastError();
 			printf("Failed to LoadResource (0x%.8X)\n", last_error);
 			return last_error;
 		}
@@ -165,8 +189,8 @@ int main(int argc, char* argv[]) {
 		auto dos_header = (IMAGE_DOS_HEADER*)(template_exe_buffer);
 		auto nt_header = (IMAGE_NT_HEADERS*)((uintptr_t)template_exe_buffer + dos_header->e_lfanew);
 		auto sections = (IMAGE_SECTION_HEADER*)((uintptr_t)(nt_header)+sizeof(*nt_header));
-		DWORD file_alignment = nt_header->OptionalHeader.FileAlignment;
-		DWORD section_alignment = nt_header->OptionalHeader.SectionAlignment;
+		unsigned long file_alignment = nt_header->OptionalHeader.FileAlignment;
+		unsigned long section_alignment = nt_header->OptionalHeader.SectionAlignment;
 
 		// Writing the overlay
 		// The length of the bytecode, followed by the bytecode
@@ -228,16 +252,16 @@ int main(int argc, char* argv[]) {
 		IMAGE_SECTION_HEADER* next_section = &sections[new_section_index];
 		size_t new_section_size = section_end - section_start;
 		memcpy(&next_section->Name, ".runluau", 8);
-		next_section->Misc.VirtualSize = static_cast<DWORD>(new_section_size);
-		next_section->VirtualAddress = (DWORD)align(highest_section->VirtualAddress + highest_section->Misc.VirtualSize, section_alignment);
-		next_section->SizeOfRawData = (DWORD)align(new_section_size, file_alignment);
-		next_section->PointerToRawData = highest_section->PointerToRawData + (DWORD)align(highest_section->SizeOfRawData, file_alignment);
+		next_section->Misc.VirtualSize = static_cast<unsigned long>(new_section_size);
+		next_section->VirtualAddress = (unsigned long)align(highest_section->VirtualAddress + highest_section->Misc.VirtualSize, section_alignment);
+		next_section->SizeOfRawData = (unsigned long)align(new_section_size, file_alignment);
+		next_section->PointerToRawData = highest_section->PointerToRawData + (unsigned long)align(highest_section->SizeOfRawData, file_alignment);
 		next_section->PointerToRelocations = NULL;
 		next_section->PointerToLinenumbers = NULL;
 		next_section->NumberOfRelocations = 0;
 		next_section->NumberOfLinenumbers = 0;
 		next_section->Characteristics = IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_INITIALIZED_DATA;
-		nt_header->OptionalHeader.SizeOfImage = (DWORD)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
+		nt_header->OptionalHeader.SizeOfImage = (unsigned long)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
 		// Add in the newly made section by overwriting the headers
 		std::fstream post_output_file(output_path, std::ios::binary | std::ios::in | std::ios::out);
 		if (!post_output_file) [[unlikely]] {
