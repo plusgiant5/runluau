@@ -8,6 +8,7 @@
 
 #include "colors.h"
 #include "plugins.h"
+#include "errors.h"
 
 using namespace runluau;
 
