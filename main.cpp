@@ -14,11 +14,11 @@
 #include <fstream>
 #include <format>
 
+#include "errors.h"
 #include "file.hpp"
 #include "execute.h"
 #include "plugins.h"
 #include "luau.h"
-#include "errors.h"
 
 void help_then_exit(std::string notice_message) {
 	printf(R"(%s Help is below:
