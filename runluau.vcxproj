@@ -162,7 +162,7 @@
       </Command>
     </PreBuildEvent>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
+      <Command>rmdir /s /q "$(SolutionDir)out\$(Configuration)\runluau-libs" &amp; mkdir "$(SolutionDir)out\$(Configuration)\runluau-libs" &amp; xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
       <Message>Copying libs.</Message>
       <Outputs>file that doesn't exist</Outputs>
     </CustomBuildStep>
