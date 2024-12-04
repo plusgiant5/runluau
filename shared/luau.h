@@ -1,5 +1,6 @@
 #pragma once
-
+#ifndef _SHARED_LUAU_H
+#define _SHARED_LUAU_H
 #define SCHEDULER_RATE 240
 #define DEFAULT_CHUNK_NAME "runluau" // No spaces or colons
 
@@ -23,7 +24,7 @@ namespace fs = std::filesystem;
 #include <Luau/CodeGen.h>
 #pragma pop_macro("max")
 #include <Luau/Compiler.h>
-#include <lualib.h>
+#include "../Luau/VM/include/lualib.h"
 
 #ifdef PROJECT_EXPORTS
 // https://stackoverflow.com/a/78330763
@@ -73,3 +74,4 @@ typedef void* yield_ready_event_t;
 typedef void(*yield_thread_func_t)(lua_State* thread, yield_ready_event_t yield_ready_event, void* ud);
 API void signal_yield_ready(yield_ready_event_t yield_ready_event);
 API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud = nullptr);
+#endif
