@@ -11,6 +11,7 @@
 #include <dlfcn.h>
 #endif
 #include "errors.h"
+#include "macros.h"
 
 typedef void(__fastcall* register_library_t)(lua_State* state);
 typedef const char**(__fastcall* get_dependencies_t)();
@@ -44,7 +45,15 @@ std::unordered_map<std::string, std::vector<std::string>> collect_dependencies(c
 			dependencies.insert(subdir_dependencies.begin(), subdir_dependencies.end());
 		} else if (file.path().extension() == ".dll") {
 			auto plugin_module = load_plugin(file.path());
+#ifdef _WIN32
 			get_dependencies_t get_dependencies = (get_dependencies_t)GetProcAddress(plugin_module, "get_dependencies");
+#else
+			get_dependencies_t get_dependencies = (get_dependencies_t)dlsym(plugin_module, "get_dependencies");
+			if (!get_dependencies) [[unlikely]] {
+				fprintf(stderr, "Failed to find get_dependencies export in plugin %s\n", file.path().filename().c_str());
+				exit(EINVAL);
+			}
+#endif
 			std::vector<std::string> wanted_dependencies;
 			if (get_dependencies) {
 				for (const char** wanted_dependency = get_dependencies(); *wanted_dependency; ++wanted_dependency) {
