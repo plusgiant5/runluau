@@ -67,7 +67,6 @@ export type gfx_event_type = typeof(({} :: gfx_event).event_type)
 declare gfx: {
 	create_window: (width: number, height: number, title: string?, pixel_size: number?) -> buffer;
 	window_exists: (fb: buffer) -> boolean;
-	render: (fb: buffer) -> ();
 	get_window_events: (fb: buffer) -> {gfx_event};
 	set_window_size: (fb: buffer, width: number, height: number) -> ();
 	get_cursor_position: (fb: buffer) -> (number, number);
