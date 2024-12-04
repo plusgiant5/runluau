@@ -97,6 +97,13 @@ BOOL WINAPI ctrl_handler(DWORD type) {
 }
 int main(int argc, char* argv[]) {
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (console) {
+		DWORD mode;
+		GetConsoleMode(console, &mode);
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		SetConsoleMode(console, mode);
+	}
 	std::vector<std::string> args(argv + 1, argv + argc);
 	if (args.size() < 2) [[unlikely]]
 		help_then_exit("Not enough arguments.");
