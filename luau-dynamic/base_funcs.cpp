@@ -15,7 +15,14 @@ int require(lua_State* thread) {
 	wanted_arg_count(1);
 	std::string path = luaL_checkstring(thread, 1);
 
-	read_file_info module_info = read_require(path);
+	read_file_info module_info;
+	try {
+		module_info = read_require(path);
+	} catch (std::runtime_error error) {
+		lua_pushstring(thread, error.what());
+		lua_error(thread);
+		return 1;
+	}
 
 	lua_State* main_thread = lua_mainthread(thread);
 	lua_State* module_thread = luau::create_thread(main_thread);

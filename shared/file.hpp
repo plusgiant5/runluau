@@ -83,7 +83,6 @@ read_file_info read_plugin(const std::string& path) {
 	}
 }
 read_file_info read_require(const std::string& path) {
-	fs::path plugins_folder = get_plugins_folder();
 	try {
 		std::vector<fs::path> possible_paths;
 		for (const auto& suffix : {".luau", "", "/init.luau", "/init", ".lua", "/init.lua"}) {
@@ -93,11 +92,9 @@ read_file_info read_require(const std::string& path) {
 		return read_paths(possible_paths);
 	} catch (int err) {
 		if (err == ENOENT) {
-			printf("No file found at \"%s\"\n", path.c_str());
-			exit(ERROR_FILE_NOT_FOUND);
+			throw std::runtime_error(std::format("No file found at \"{}\"", path));
 		} else {
-			printf("Access denied when reading file \"%s\"\n", path.c_str());
-			exit(err);
+			throw std::runtime_error(std::format("Access denied when reading file \"{}\"", path));
 		}
 	}
 }
