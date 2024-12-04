@@ -75,4 +75,3 @@ typedef void* yield_ready_event_t;
 typedef void(*yield_thread_func_t)(lua_State* thread, yield_ready_event_t yield_ready_event, void* ud);
 API void signal_yield_ready(yield_ready_event_t yield_ready_event);
 API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud = nullptr);
-#endif
