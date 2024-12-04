@@ -39,6 +39,7 @@ namespace fs = std::filesystem;
 #define API __declspec(dllimport)
 #else
 #define API __attribute__((visibility("default")))
+#define __fastcall __attribute__((fastcall))
 #endif
 #endif
 
