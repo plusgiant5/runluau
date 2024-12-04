@@ -16,17 +16,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runluau-build-template", "r
 		{A71BEF97-5F84-479D-B9B0-480A00ABD88A} = {A71BEF97-5F84-479D-B9B0-480A00ABD88A}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{ED260E08-3AF3-452A-A014-25B6888F130C}"
-	ProjectSection(SolutionItems) = preProject
-		shared\colors.h = shared\colors.h
-		shared\file.hpp = shared\file.hpp
-		shared\luau.h = shared\luau.h
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{3AC5F91C-EF7F-4660-9893-1E8F08703742}"
 	ProjectSection(SolutionItems) = preProject
 		external\env.d.luau = external\env.d.luau
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcxproj", "{D05D695C-6B27-4F52-AC4F-4103509A0943}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +55,13 @@ Global
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x64.Build.0 = Release|x64
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x86.ActiveCfg = Release|Win32
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x86.Build.0 = Release|Win32
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x64.ActiveCfg = Debug|x64
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x64.Build.0 = Debug|x64
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x86.ActiveCfg = Debug|Win32
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x86.Build.0 = Debug|Win32
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x64.ActiveCfg = Release|x64
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x86.ActiveCfg = Release|Win32
+		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
