@@ -4,12 +4,20 @@
 #include <unordered_set>
 #include <stack>
 #include <vector>
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#include <dlfcn.h>
+#endif
+#include "errors.h"
+#include "macros.h"
 
 typedef void(__fastcall* register_library_t)(lua_State* state);
 typedef const char**(__fastcall* get_dependencies_t)();
 
 
+#ifdef _WIN32
 HMODULE load_plugin(const fs::path& path) {
 	HMODULE plugin_module = LoadLibraryW(path.wstring().c_str());
 	if (!plugin_module) [[unlikely]] {
@@ -18,6 +26,16 @@ HMODULE load_plugin(const fs::path& path) {
 	}
 	return plugin_module;
 }
+#else
+void* load_plugin(const fs::path& path) {
+	void* plugin_module = dlopen(path.c_str(), RTLD_LAZY);
+	if (!plugin_module) [[unlikely]] {
+		fprintf(stderr, "Failed to load plugin %s\n", dlerror());
+		exit(ERROR_MOD_NOT_FOUND);
+	}
+	return plugin_module;
+}
+#endif
 
 std::unordered_map<std::string, std::vector<std::string>> collect_dependencies(const fs::path& folder) {
 	std::unordered_map<std::string, std::vector<std::string>> dependencies;
@@ -26,8 +44,16 @@ std::unordered_map<std::string, std::vector<std::string>> collect_dependencies(c
 			auto subdir_dependencies = collect_dependencies(file);
 			dependencies.insert(subdir_dependencies.begin(), subdir_dependencies.end());
 		} else if (file.path().extension() == ".dll") {
-			HMODULE plugin_module = load_plugin(file.path());
+			auto plugin_module = load_plugin(file.path());
+#ifdef _WIN32
 			get_dependencies_t get_dependencies = (get_dependencies_t)GetProcAddress(plugin_module, "get_dependencies");
+#else
+			get_dependencies_t get_dependencies = (get_dependencies_t)dlsym(plugin_module, "get_dependencies");
+			if (!get_dependencies) [[unlikely]] {
+				fprintf(stderr, "Failed to find get_dependencies export in plugin %s\n", file.path().filename().c_str());
+				exit(EINVAL);
+			}
+#endif
 			std::vector<std::string> wanted_dependencies;
 			if (get_dependencies) {
 				for (const char** wanted_dependency = get_dependencies(); *wanted_dependency; ++wanted_dependency) {
@@ -80,11 +106,15 @@ void apply_plugins(lua_State* state) {
 	auto sorted_plugins = topological_sort(dependencies);
 	for (const auto& plugin_name : sorted_plugins) {
 		fs::path plugin_path = folder / plugin_name;
-		HMODULE plugin_module = load_plugin(plugin_path);
+		auto plugin_module = load_plugin(plugin_path);
+		#ifdef _WIN32
 		register_library_t register_library = (register_library_t)GetProcAddress(plugin_module, "register_library");
+		#else
+		register_library_t register_library = (register_library_t)dlsym(plugin_module, "register_library");
+		#endif
 		if (!register_library) [[unlikely]] {
 			wprintf(L"Invalid plugin %s (missing register_library export)\n", plugin_path.wstring().c_str());
-			exit(ERROR_PROC_NOT_FOUND);
+			exit(ERROR_NOT_FOUND);
 		}
 		register_library(state);
 	}

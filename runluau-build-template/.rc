@@ -1,5 +1,0 @@
-#ifdef _DEBUG
-101 BINARY "../luau/Debug/luau.dll"
-#else
-101 BINARY "../luau/Release/luau.dll"
-#endif
