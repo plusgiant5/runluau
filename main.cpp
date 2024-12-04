@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 
 		std::string bytecode = luau::wrapped_compile(source, settings.O, settings.g);
 		if (bytecode[0] == '\0') {
-			printf("Syntax error:\n%s\n", bytecode.data() + 1);
+			printf("Syntax error:\n%s\n", luau::beautify_syntax_error(DEFAULT_CHUNK_NAME + std::string(bytecode.data() + 1)).c_str());
 			return ERROR_INTERNAL_ERROR;
 		}
 

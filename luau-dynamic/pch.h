@@ -6,6 +6,8 @@
 #include <format>
 #include <thread>
 #include <mutex>
+#include <algorithm>
+#include <string>
 
 #include "colors.h"
 

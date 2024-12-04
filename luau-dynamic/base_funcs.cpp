@@ -31,7 +31,9 @@ int require(lua_State* thread) {
 	luaL_sandboxthread(module_thread);
 
 	std::string bytecode = luau::wrapped_compile(module_info.contents, specified_O, specified_g);
-	luau::load_and_handle_status(module_thread, bytecode, module_info.path.string());
+	std::string name = module_info.path.string();
+	std::replace(name.begin(), name.end(), ' ', '_');
+	luau::load_and_handle_status(module_thread, bytecode, name);
 
 	std::optional<std::string> error = std::nullopt;
 	int status = lua_resume(module_thread, NULL, 0);
