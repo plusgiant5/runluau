@@ -15,7 +15,14 @@ int require(lua_State* thread) {
 	wanted_arg_count(1);
 	std::string path = luaL_checkstring(thread, 1);
 
-	read_file_info module_info = read_require(path);
+	read_file_info module_info;
+	try {
+		module_info = read_require(path);
+	} catch (std::runtime_error error) {
+		lua_pushstring(thread, error.what());
+		lua_error(thread);
+		return 1;
+	}
 
 	lua_State* main_thread = lua_mainthread(thread);
 	lua_State* module_thread = luau::create_thread(main_thread);
@@ -24,7 +31,9 @@ int require(lua_State* thread) {
 	luaL_sandboxthread(module_thread);
 
 	std::string bytecode = luau::wrapped_compile(module_info.contents, specified_O, specified_g);
-	luau::load_and_handle_status(module_thread, bytecode, module_info.path.string());
+	std::string name = module_info.path.string();
+	std::replace(name.begin(), name.end(), ' ', '_');
+	luau::load_and_handle_status(module_thread, bytecode, name);
 
 	std::optional<std::string> error = std::nullopt;
 	int status = lua_resume(module_thread, NULL, 0);

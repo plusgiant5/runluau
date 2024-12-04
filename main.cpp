@@ -121,6 +121,13 @@ int main(int argc, char* argv[]) {
 #else
 	signal(SIGINT, (void(*)(int))ctrl_handler);
 #endif
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (console) {
+		DWORD mode;
+		GetConsoleMode(console, &mode);
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		SetConsoleMode(console, mode);
+	}
 	std::vector<std::string> args(argv + 1, argv + argc);
 	if (args.size() < 2) [[unlikely]]
 		help_then_exit("Not enough arguments.");
@@ -143,7 +150,7 @@ int main(int argc, char* argv[]) {
 
 		std::string bytecode = luau::wrapped_compile(source, settings.O, settings.g);
 		if (bytecode[0] == '\0') {
-			printf("Syntax error:\n%s\n", bytecode.data() + 1);
+			printf("Syntax error:\n%s\n", luau::beautify_syntax_error(DEFAULT_CHUNK_NAME + std::string(bytecode.data() + 1)).c_str());
 			return ERROR_INTERNAL_ERROR;
 		}
 

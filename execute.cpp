@@ -26,7 +26,7 @@ void runluau::execute_bytecode(const std::string& bytecode, settings& settings) 
 	lua_State* thread = luau::create_thread(state);
 
 	try {
-		luau::load_and_handle_status(thread, bytecode);
+		luau::load_and_handle_status(thread, bytecode, DEFAULT_CHUNK_NAME, true);
 	} catch (std::runtime_error error) {
 		printf("Failed to load bytecode: %s\n", error.what());
 		exit(ERROR_INTERNAL_ERROR);

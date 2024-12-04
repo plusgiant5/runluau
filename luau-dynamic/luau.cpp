@@ -78,6 +78,25 @@ __declspec(dllexport) std::string luau::beautify_stack_trace(std::string stack_t
 	}
 	return colored.substr(0, colored.size() - 1) + RESET;
 }
+__declspec(dllexport) std::string luau::beautify_syntax_error(std::string syntax_error) {
+	size_t space = syntax_error.find_first_of(' ');
+	if (space == std::string::npos) {
+		return syntax_error;
+	}
+	std::string errorpart = syntax_error.substr(space);
+	std::string location = syntax_error.substr(0, space);
+	size_t first_colon = syntax_error.find_first_of(':');
+	if (first_colon == std::string::npos) {
+		return syntax_error;
+	}
+	std::string chunk_name = syntax_error.substr(0, first_colon);
+	size_t second_colon = syntax_error.find_first_of(':', first_colon + 1);
+	if (second_colon == std::string::npos || second_colon + 1 != location.size()) {
+		return syntax_error;
+	}
+	std::string line_number = syntax_error.substr(first_colon + 1, second_colon - first_colon - 1);
+	return MAGENTA + chunk_name + ":" + NUMBER_COLOR + line_number + MAGENTA + ":" + RED + errorpart + RESET;
+}
 
 // So other compilations (like with require) respect the script args if specified
 bool set_specified = false;
@@ -126,18 +145,21 @@ __declspec(dllexport) lua_State* luau::create_thread(lua_State* thread) {
 	lua_State* new_thread = lua_newthread(thread);
 	return new_thread;
 }
-__declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name) {
+__declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name, bool beautify_syntax_error) {
 	int status = luau_load(thread, ("=" + chunk_name).c_str(), bytecode.data(), bytecode.size(), 0);
 	if (status != 0) [[unlikely]] {
 		if (status != 1) [[unlikely]] {
-			throw std::runtime_error(std::format("Unknown luau_load status `{}`\n", status));
+			throw std::runtime_error(std::format("Unknown luau_load status `{}`", status));
 		}
-		const char* error_message = lua_tostring(thread, 1);
-		throw std::runtime_error(std::format("Syntax error:\n{}\n", error_message));
+		std::string error_message = lua_tostring(thread, 1);
+		if (beautify_syntax_error) {
+			error_message = luau::beautify_syntax_error(error_message);
+		}
+		throw std::runtime_error(std::format("Syntax error:\n{}", error_message));
 	}
 
 	if (Luau::CodeGen::isSupported()) {
-		Luau::CodeGen::CompilationOptions options{ .flags = Luau::CodeGen::CodeGen_OnlyNativeModules | Luau::CodeGen::CodeGen_ColdFunctions };
+		Luau::CodeGen::CompilationOptions options{ .flags = Luau::CodeGen::CodeGen_ColdFunctions };
 		Luau::CodeGen::compile(thread, -1, options);
 	}
 }
