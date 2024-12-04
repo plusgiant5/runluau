@@ -106,11 +106,15 @@ void apply_plugins(lua_State* state) {
 	auto sorted_plugins = topological_sort(dependencies);
 	for (const auto& plugin_name : sorted_plugins) {
 		fs::path plugin_path = folder / plugin_name;
-		HMODULE plugin_module = load_plugin(plugin_path);
+		auto plugin_module = load_plugin(plugin_path);
+		#ifdef _WIN32
 		register_library_t register_library = (register_library_t)GetProcAddress(plugin_module, "register_library");
+		#else
+		register_library_t register_library = (register_library_t)dlsym(plugin_module, "register_library");
+		#endif
 		if (!register_library) [[unlikely]] {
 			wprintf(L"Invalid plugin %s (missing register_library export)\n", plugin_path.wstring().c_str());
-			exit(ERROR_PROC_NOT_FOUND);
+			exit(ERROR_NOT_FOUND);
 		}
 		register_library(state);
 	}
