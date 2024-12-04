@@ -127,6 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="colors.h" />
+    <ClInclude Include="file.hpp" />
+    <ClInclude Include="luau.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="shared.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

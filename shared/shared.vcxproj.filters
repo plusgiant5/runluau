@@ -15,6 +15,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="colors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luau.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

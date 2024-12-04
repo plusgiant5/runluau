@@ -1,0 +1,3 @@
+// Visual Studio needs this here to show C++ settings...
+
+int main() {}

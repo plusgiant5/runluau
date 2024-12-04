@@ -1,7 +1,5 @@
 LIBRARY "luau"
 EXPORTS
-	?thread_count@luau@@3_KA
-
 	?compile@CodeGen@Luau@@YA?AUCompilationResult@12@PEAUlua_State@@HAEBUCompilationOptions@12@PEAUCompilationStats@12@@Z
 	?create@CodeGen@Luau@@YAXPEAUlua_State@@@Z
 	?isSupported@CodeGen@Luau@@YA_NXZ
