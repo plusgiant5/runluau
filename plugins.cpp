@@ -12,7 +12,7 @@ typedef const char**(__fastcall* get_dependencies_t)();
 
 HMODULE load_plugin(const fs::path& path) {
 	HMODULE plugin_module = LoadLibraryW(path.wstring().c_str());
-	if (!plugin_module) [[unlikely]] {
+	if (!plugin_module) {
 		wprintf(L"Failed to load plugin %s\n", path.wstring().c_str());
 		exit(ERROR_MOD_NOT_FOUND);
 	}
@@ -82,7 +82,7 @@ void apply_plugins(lua_State* state) {
 		fs::path plugin_path = folder / plugin_name;
 		HMODULE plugin_module = load_plugin(plugin_path);
 		register_library_t register_library = (register_library_t)GetProcAddress(plugin_module, "register_library");
-		if (!register_library) [[unlikely]] {
+		if (!register_library) {
 			wprintf(L"Invalid plugin %s (missing register_library export)\n", plugin_path.wstring().c_str());
 			exit(ERROR_PROC_NOT_FOUND);
 		}

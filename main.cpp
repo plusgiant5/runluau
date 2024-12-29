@@ -18,15 +18,17 @@ void help_then_exit(std::string notice_message) {
 runluau mode options...
 
 Modes:
-	- Run a script. `args` is optional. If specified, everything after it will be passed into the script:
-	runluau run path\to\script <options> --args <...>
-	- Build a script to an executable, with an optional list of plugins to embed into the output. If `plugins` isn't specified, it will use every plugin installed:
-	runluau build path\to\script path\to\output <options> --plugins <...>
+	- Run a script. `args` is optional. If specified, everything after it will be passed into the script. If not specified, `script` will be set to "init".
+	runluau run <script>? <options> --args <...>
+	- Build a script to an executable, with an optional list of plugins to embed into the output. If `plugins` isn't specified, it will use every plugin installed.
+	runluau build <script> <output> <options> --plugins <...>
 Options:
 	- [default: 1] Optimization level 0-2:
 	-O <n>
 	- [default: 1] Debug level 0-2:
 	-g <n>
+
+Script paths don't have to include `.luau` or `.lua`. `file.luau` can optionally be shortened to `file`.
 )", notice_message.c_str());
 	exit(ERROR_INVALID_PARAMETER);
 }
@@ -41,13 +43,13 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 	bool reading_plugins = false;
 	for (size_t i = starting_point; i < args.size(); i++) {
 		const auto& arg = args[i];
-		if (reading_args) [[likely]] {
+		if (reading_args) {
 			script_args.push_back(arg);
-		} else if (reading_plugins) [[unlikely]] {
+		} else if (reading_plugins) {
 			plugins.push_back(arg);
-		} else if (arg == "--args") [[unlikely]] {
+		} else if (arg == "--args") {
 			reading_args = true;
-		} else if (arg == "--plugins") [[unlikely]] {
+		} else if (arg == "--plugins") {
 			reading_plugins = true;
 		} else {
 			if (used_args.find(arg) != used_args.end()) {
@@ -105,23 +107,34 @@ int main(int argc, char* argv[]) {
 		SetConsoleMode(console, mode);
 	}
 	std::vector<std::string> args(argv + 1, argv + argc);
-	if (args.size() < 2) [[unlikely]]
+	if (args.size() < 1)
 		help_then_exit("Not enough arguments.");
 	std::string mode = args[0];
 	if (mode == "run") {
-		read_file_info script = read_script(args[1]);
-		runluau::settings settings = read_args(args, 2);
-		if (settings.plugins != std::nullopt) [[unlikely]]
+		read_file_info script;
+		runluau::settings settings;
+		bool script_specified = args.size() > 1;
+		if (script_specified) {
+			script_specified = args[1].substr(0, 1) != "-";
+		}
+		if (script_specified) {
+			script = read_script(args[1]);
+			settings = read_args(args, 2);
+		} else {
+			script = read_script("init");
+			settings = read_args(args, 1);
+		}
+		if (settings.plugins != std::nullopt)
 			help_then_exit("Cannot specify `--plugins` in `run` mode.");
 
 		runluau::execute(script.contents, settings);
 	} else if (mode == "build") {
-		if (args.size() < 3) [[unlikely]]
+		if (args.size() < 3)
 			help_then_exit("Not enough arguments.");
 		std::string source = read_script(args[1]).contents;
 		fs::path output_path = args[2];
 		runluau::settings settings = read_args(args, 3);
-		if (settings.script_args != std::nullopt) [[unlikely]]
+		if (settings.script_args != std::nullopt)
 			help_then_exit("Cannot specify `--args` in `build` mode.");
 
 		std::string bytecode = luau::wrapped_compile(source, settings.O, settings.g);
@@ -133,14 +146,14 @@ int main(int argc, char* argv[]) {
 		// Getting the template binary
 		HMODULE self_handle = GetModuleHandleW(NULL);
 		HRSRC resource_handle = FindResourceA(self_handle, MAKEINTRESOURCEA(101), "BINARY");
-		if (!resource_handle) [[unlikely]] {
+		if (!resource_handle) {
 			DWORD last_error = GetLastError();
 			printf("Failed to FindResourceA (0x%.8X)\n", last_error);
 			return last_error;
 		}
 		HGLOBAL loaded = LoadResource(self_handle, resource_handle);
 		DWORD resource_size = SizeofResource(self_handle, resource_handle);
-		if (!loaded) [[unlikely]] {
+		if (!loaded) {
 			DWORD last_error = GetLastError();
 			printf("Failed to LoadResource (0x%.8X)\n", last_error);
 			return last_error;
@@ -155,14 +168,14 @@ int main(int argc, char* argv[]) {
 
 		// Open in trunc first to clear contents
 		std::ofstream pre_output_file(output_path, std::ios::binary | std::ios::out | std::ios::trunc);
-		if (!pre_output_file) [[unlikely]] {
+		if (!pre_output_file) {
 			int err = errno;
 			wprintf(L"Invalid output path \"%s\"\n", output_path.c_str());
 			return err;
 		}
 		pre_output_file.close();
 		std::ofstream output_file(output_path, std::ios::binary | std::ios::out | std::ios::app);
-		if (!output_file) [[unlikely]] {
+		if (!output_file) {
 			int err = errno;
 			wprintf(L"Failed to open \"%s\" in append mode\n", output_path.c_str());
 			return err;
@@ -247,7 +260,7 @@ int main(int argc, char* argv[]) {
 		nt_header->OptionalHeader.SizeOfImage = (DWORD)align(next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
 		// Add in the newly made section by overwriting the headers
 		std::fstream post_output_file(output_path, std::ios::binary | std::ios::in | std::ios::out);
-		if (!post_output_file) [[unlikely]] {
+		if (!post_output_file) {
 			int err = errno;
 			wprintf(L"Failed to open \"%s\" in final stage\n", output_path.c_str());
 			return err;
@@ -257,7 +270,7 @@ int main(int argc, char* argv[]) {
 		post_output_file.close();
 
 		wprintf(L"Built to \"%s\"\n", fs::absolute(output_path).c_str());
-	} else [[unlikely]] {
+	} else {
 		help_then_exit(std::format("Unknown mode `{}`.", mode));
 	}
 	return 0;

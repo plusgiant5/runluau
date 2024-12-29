@@ -48,7 +48,7 @@ namespace luau {
 }
 
 #define wanted_arg_count(n) \
-if (n > 0 && lua_gettop(thread) < n) [[unlikely]] { \
+if (n > 0 && lua_gettop(thread) < n) { \
 	lua_pushfstring(thread, __FUNCTION__" expects at least " #n " arguments, received %d", lua_gettop(thread)); \
 	lua_error(thread); \
 	return 0; \

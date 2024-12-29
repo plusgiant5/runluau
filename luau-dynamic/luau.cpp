@@ -147,8 +147,8 @@ __declspec(dllexport) lua_State* luau::create_thread(lua_State* thread) {
 }
 __declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name, bool beautify_syntax_error) {
 	int status = luau_load(thread, ("=" + chunk_name).c_str(), bytecode.data(), bytecode.size(), 0);
-	if (status != 0) [[unlikely]] {
-		if (status != 1) [[unlikely]] {
+	if (status != 0) {
+		if (status != 1) {
 			throw std::runtime_error(std::format("Unknown luau_load status `{}`", status));
 		}
 		std::string error_message = lua_tostring(thread, 1);

@@ -6,8 +6,8 @@
     <LocalDebuggerWorkingDirectory>C:\Users\joebiden\AppData\Roaming\bidenlol\scripts\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>run ai/v2/main2</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>C:\Users\joebiden\Documents\Projects\runluau</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>run</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>C:\Users\joebiden\Documents\Projects\runluau\any</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
   </PropertyGroup>

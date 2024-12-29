@@ -24,7 +24,7 @@ fs::path get_parent_folder() {
 }
 fs::path get_plugins_folder() {
 	fs::path plugins_folder = get_parent_folder() / PLUGINS_FOLDER_NAME;
-	if (!fs::exists(plugins_folder)) [[unlikely]] {
+	if (!fs::exists(plugins_folder)) {
 		fs::create_directory(plugins_folder);
 	}
 	return plugins_folder;
@@ -33,7 +33,7 @@ fs::path get_plugins_folder() {
 
 std::string read_file(const fs::path path) {
 	std::ifstream file(path, std::ios::binary);
-	if (!file) [[unlikely]] {
+	if (!file) {
 		throw errno;
 	}
 	std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
