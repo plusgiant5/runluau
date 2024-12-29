@@ -57,7 +57,7 @@ read_file_info read_paths(const std::vector<fs::path>& paths) {
 }
 read_file_info read_script(const std::string& path) {
 	try {
-		return read_paths({path, path + ".luau", path + ".lua"});
+		return read_paths({path, path + ".luau", path + ".lua", path + "\\init.luau", path + "\\init.lua", path + "\\init"});
 	} catch (int err) {
 		if (err == ENOENT) {
 			printf("No script found at \"%s\"\n", path.c_str());
