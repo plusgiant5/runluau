@@ -11,6 +11,8 @@ void set_O_g(int O, int g) {
 }
 
 // Mostly from Luau source
+std::unordered_map<lua_State*, std::unordered_map<std::string, lua_State*>> module_thread_cache; // [mainthread][path]
+std::recursive_mutex module_thread_cache_mutex;
 int require(lua_State* thread) {
 	wanted_arg_count(1);
 	std::string path = luaL_checkstring(thread, 1);
@@ -25,6 +27,20 @@ int require(lua_State* thread) {
 	}
 
 	lua_State* main_thread = lua_mainthread(thread);
+
+	std::lock_guard<std::recursive_mutex> lock(module_thread_cache_mutex);
+	module_thread_cache.insert({main_thread, {}});
+	auto& threads = module_thread_cache.at(main_thread);
+
+	std::string resolved_path = std::filesystem::absolute(module_info.path).string();
+	if (threads.find(resolved_path) != threads.end()) {
+		//printf("Using cached module %s\n", resolved_path.c_str());
+		lua_State* module_thread = threads.at(resolved_path);
+		lua_xpush(module_thread, thread, 1);
+		lua_pushvalue(thread, -1);
+		return 1;
+	}
+
 	lua_State* module_thread = luau::create_thread(main_thread);
 	lua_xmove(main_thread, thread, 1);
 
@@ -63,10 +79,10 @@ int require(lua_State* thread) {
 		return 1;
 	}
 
-	lua_xmove(module_thread, thread, 1);
+	lua_xpush(module_thread, thread, 1);
 	lua_pushvalue(thread, -1);
 
-	lua_resetthread(module_thread);
+	threads.insert({resolved_path, module_thread});
 
 	return 1;
 }
