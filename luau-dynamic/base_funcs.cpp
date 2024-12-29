@@ -87,7 +87,7 @@ int require(lua_State* thread) {
 	lua_xpush(module_thread, thread, 1);
 	lua_pushvalue(thread, -1);
 
-	lua_ref(thread, 2);
+	lua_ref(thread, 3);
 
 	return 1;
 }
