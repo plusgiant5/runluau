@@ -45,6 +45,9 @@ namespace luau {
 	API std::string beautify_syntax_error(std::string syntax_error);
 	API void on_thread_error(lua_State* thread);
 	API std::string wrapped_compile(const std::string& source, const int O, const int g);
+
+	API std::string checkstring(lua_State* thread, int arg);
+	API std::string optstring(lua_State* thread, int arg, std::string def);
 }
 
 #define wanted_arg_count(n) \

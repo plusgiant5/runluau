@@ -62,5 +62,7 @@ EXPORTS
 	luaL_checkbuffer
 	luaL_optnumber
 	luaL_optlstring
+	lua_pushcclosurek
 	lua_pushthread
 	lua_pushlightuserdatatagged
+	lua_pushnil

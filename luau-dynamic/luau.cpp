@@ -250,6 +250,17 @@ __declspec(dllexport) void create_windows_thread_for_luau(lua_State* thread, yie
 	WaitForSingleObject(yield_ready_event, INFINITE);
 }
 
+__declspec(dllexport) std::string luau::checkstring(lua_State* thread, int arg) {
+	size_t len;
+	const char* contents = luaL_checklstring(thread, arg, &len);
+	return std::string(contents, len);
+}
+__declspec(dllexport) std::string luau::optstring(lua_State* thread, int arg, std::string def) {
+	size_t len = def.size();
+	const char* contents = luaL_optlstring(thread, arg, def.data(), &len);
+	return std::string(contents, len);
+}
+
 bool APIENTRY DllMain(HMODULE, DWORD reason, void* reserved) {
 	return true;
 }

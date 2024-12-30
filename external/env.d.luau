@@ -71,3 +71,13 @@ declare gfx: {
 	set_window_size: (fb: buffer, width: number, height: number) -> ();
 	get_cursor_position: (fb: buffer) -> (number, number);
 }
+
+
+
+-- osunsafe
+declare os: {
+	execute: (command: string) -> ();
+	capture: (command: string) -> string;
+	getenv: (variable: string) -> string?;
+	setenv: (variable: string, value: string) -> ();
+}

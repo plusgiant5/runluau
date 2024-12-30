@@ -176,6 +176,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\luau.h" />
     <ClInclude Include="base_funcs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scheduler.h" />
