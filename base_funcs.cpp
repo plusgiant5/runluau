@@ -1,14 +1,8 @@
-#include "pch.h"
-
 #include "base_funcs.h"
-#include "file.hpp"
+#include "file.h"
+#include "execute.h"
 
-int specified_O{};
-int specified_g{};
-void set_O_g(int O, int g) {
-	specified_O = O;
-	specified_g = g;
-}
+#include <Luau/Compiler.h>
 
 // Mostly from Luau source
 std::unordered_map<lua_State*, std::unordered_map<std::string, lua_State*>> module_thread_cache; // [mainthread][path]
@@ -51,7 +45,7 @@ int require(lua_State* thread) {
 
 	luaL_sandboxthread(module_thread);
 
-	std::string bytecode = luau::wrapped_compile(module_info.contents, specified_O, specified_g);
+	std::string bytecode = runluau::compile(module_info.contents, luau::get_O(), luau::get_g());
 	std::string name = module_info.path.string();
 	std::replace(name.begin(), name.end(), ' ', '_');
 	luau::load_and_handle_status(module_thread, bytecode, name);
@@ -93,6 +87,6 @@ int require(lua_State* thread) {
 }
 
 void register_base_funcs(lua_State* state) {
-#define r(name) lua_pushcfunction(state, name, #name); lua_setglobal(state, #name);
-	r(require);
+#define reg(name) lua_pushcfunction(state, name, #name); lua_setglobal(state, #name);
+	reg(require);
 }

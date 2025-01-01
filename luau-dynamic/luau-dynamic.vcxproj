@@ -133,11 +133,11 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>%LUAUSRC%\out\build\x64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Luau.CodeGen.lib;Luau.Ast.lib;Luau.Compiler.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Luau.CodeGen.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>move $(SolutionDir)luau\$(Configuration)\luau.dll $(SolutionDir)out\$(Configuration)</Command>
+      <Command>copy $(SolutionDir)luau\$(Configuration)\luau.dll $(SolutionDir)out\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -168,7 +168,7 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>%LUAUSRC%\out\build\x64-release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Luau.CodeGen.lib;Luau.Ast.lib;Luau.Compiler.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Luau.CodeGen.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -177,12 +177,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\shared\luau.h" />
-    <ClInclude Include="base_funcs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scheduler.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base_funcs.cpp" />
     <ClCompile Include="luau.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

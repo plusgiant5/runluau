@@ -14,4 +14,5 @@ namespace runluau {
 	};
 	void execute_bytecode(const std::string& bytecode, settings& settings);
 	void execute(const std::string& source, settings& settings);
+	std::string compile(const std::string& source, const int O, const int g);
 }

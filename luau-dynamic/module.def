@@ -1,12 +1,8 @@
 LIBRARY "luau"
 EXPORTS
-	?compile@CodeGen@Luau@@YA?AUCompilationResult@12@PEAUlua_State@@HAEBUCompilationOptions@12@PEAUCompilationStats@12@@Z
 	?create@CodeGen@Luau@@YAXPEAUlua_State@@@Z
 	?isSupported@CodeGen@Luau@@YA_NXZ
 
-	?gAstRttiIndex@Luau@@3HA
-
-	?compile@Luau@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV23@AEBUCompileOptions@1@AEBUParseOptions@1@PEAVBytecodeEncoder@1@@Z
 	luau_load
 	lua_newstate
 	lua_newthread
@@ -61,8 +57,11 @@ EXPORTS
 	luaL_checkboolean
 	luaL_checkbuffer
 	luaL_optnumber
+	luaL_optunsigned
 	luaL_optlstring
 	lua_pushcclosurek
 	lua_pushthread
+	lua_pushunsigned
 	lua_pushlightuserdatatagged
 	lua_pushnil
+	lua_mainthread

@@ -14,11 +14,6 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#pragma push_macro("max")
-#undef max
-#include <Luau/CodeGen.h>
-#pragma pop_macro("max")
-#include <Luau/Compiler.h>
 #include <lualib.h>
 
 #ifdef PROJECT_EXPORTS
@@ -44,10 +39,14 @@ namespace luau {
 	API std::string beautify_stack_trace(std::string stack_trace);
 	API std::string beautify_syntax_error(std::string syntax_error);
 	API void on_thread_error(lua_State* thread);
-	API std::string wrapped_compile(const std::string& source, const int O, const int g);
+
+	API void set_O_g(int O, int g);
+	API int get_O();
+	API int get_g();
 
 	API std::string checkstring(lua_State* thread, int arg);
 	API std::string optstring(lua_State* thread, int arg, std::string def);
+	API void pushstring(lua_State* thread, std::string str);
 }
 
 #define wanted_arg_count(n) \

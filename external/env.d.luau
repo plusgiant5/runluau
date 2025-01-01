@@ -18,8 +18,65 @@ export type luau_compiler_settings = {
 	optimizationLevel: number?;
 	debugLevel: number?;
 }
+export type luau_parser_settings = {
+	allowDeclarationSyntax: boolean?; -- Declaration syntax is the syntax seen in this file
+	captureComments: boolean?;
+}
+-- Complies with Luau::toJson
+export type luau_parser_number = number | ("Infinity" | "-Infinity" | "NaN")
+export type luau_parser_int64 = string -- Because Luau can't represent large int64s. Use tonumber or pass to a big integer class.
+export type luau_parser_uint64 = string
+export type luau_parser_position = string -- Represented as line..","..column
+export type luau_parser_location = string -- Represented as beginning_line..","..beginning_column.." - "..ending_line..","..ending_column
+export type luau_parser_hotcomment = {
+	location: luau_parser_location;
+	content: string;
+	is_header: boolean;
+}
+export type luau_parser_error = {
+	location: luau_parser_location;
+	message: string;
+}
+export type luau_parser_ast_obj_comment = {
+	-- A comment like this
+	type: "Comment";
+	location: luau_parser_location;
+}
+export type luau_parser_ast_obj_block_comment = {
+	--[[
+	A comment like this
+	]]
+	--[=[or even this]=]
+	type: "BlockComment";
+	location: luau_parser_location;
+}
+export type luau_parser_ast_obj_broken_comment = {
+	-- An unclosed BlockComment
+	type: "BrokenComment";
+	location: luau_parser_location;
+}
+export type luau_parser_ast_general_comment =
+| luau_parser_ast_obj_comment
+| luau_parser_ast_obj_block_comment
+| luau_parser_ast_obj_broken_comment
+export type luau_parser_ast_obj = {
+	-- Okay I'm not doing all of these
+	type: string;
+	location: luau_parser_location
+} & any
+export type luau_parser_ast = {
+	root: luau_parser_ast_obj;
+	commentLocations: {luau_parser_ast_general_comment};
+}
+export type luau_parse_result = {
+	lines: number;
+	hotcomments: {luau_parser_hotcomment};
+	errors: {luau_parser_error};
+	ast: luau_parser_ast;
+}
 declare luau: {
-	compile: (source: string, settings: luau_compiler_settings) -> string;
+	compile: (source: string, settings: luau_compiler_settings?) -> string;
+	parse: (source: string, settings: luau_parser_settings?) -> luau_parse_result;
 }
 
 

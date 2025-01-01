@@ -1,18 +1,4 @@
-#pragma once
-
-#include <string>
-#include <filesystem>
-namespace fs = std::filesystem;
-#include <fstream>
-
-#include <Windows.h>
-
-#define PLUGINS_FOLDER_NAME "plugins"
-
-struct read_file_info {
-	std::string contents;
-	fs::path path;
-};
+#include "file.h"
 
 const fs::path get_self_path() {
 	wchar_t self_path[1024];

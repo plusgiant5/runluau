@@ -119,14 +119,17 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>luau.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%LUAUSRC%\out\build\x64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>luau.lib;Luau.Ast.lib;Luau.Compiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
       <Message>Copying libs.</Message>
       <Outputs>file that doesn't exist</Outputs>
     </CustomBuildStep>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_UNICODE;_DEBUG;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -150,8 +153,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>luau.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)luau\$(Configuration);%LUAUSRC%\out\build\x64-release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>luau.lib;Luau.Ast.lib;Luau.Compiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -168,13 +171,17 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="base_funcs.cpp" />
     <ClCompile Include="execute.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plugins.cpp" />
+    <ClCompile Include="shared\file.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="base_funcs.h" />
     <ClInclude Include="execute.h" />
     <ClInclude Include="plugins.h" />
+    <ClInclude Include="shared\file.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include=".rc" />

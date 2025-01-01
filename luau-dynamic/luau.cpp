@@ -1,8 +1,12 @@
 #include "luau.h"
 #include "pch.h"
 
-#include "base_funcs.h"
 #include "scheduler.h"
+
+#pragma push_macro("max")
+#undef max
+#include <Luau/CodeGen.h>
+#pragma pop_macro("max")
 
 void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 	(void)ud;
@@ -13,6 +17,25 @@ void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 	} else {
 		return realloc(ptr, nsize);
 	}
+}
+
+int specified_O = -1;
+int specified_g = -1;
+__declspec(dllexport) void luau::set_O_g(int O, int g) {
+	specified_O = O;
+	specified_g = g;
+}
+__declspec(dllexport) int luau::get_O() {
+	if (specified_O == -1) {
+		throw std::runtime_error("O not specified");
+	}
+	return specified_O;
+}
+__declspec(dllexport) int luau::get_g() {
+	if (specified_g == -1) {
+		throw std::runtime_error("g not specified");
+	}
+	return specified_g;
 }
 
 __declspec(dllexport) std::recursive_mutex luau::luau_operation_mutex;
@@ -98,16 +121,6 @@ __declspec(dllexport) std::string luau::beautify_syntax_error(std::string syntax
 	return MAGENTA + chunk_name + ":" + NUMBER_COLOR + line_number + MAGENTA + ":" + RED + errorpart + RESET;
 }
 
-// So other compilations (like with require) respect the script args if specified
-bool set_specified = false;
-__declspec(dllexport) std::string luau::wrapped_compile(const std::string& source, const int O, const int g) {
-	if (!set_specified) {
-		set_O_g(O, g);
-		set_specified = true;
-	}
-	return Luau::compile(source, {.optimizationLevel = O, .debugLevel = g, .vectorLib = "Vector3", .vectorCtor = "new"});
-}
-
 std::unordered_map<lua_State*, lua_State*> thread_to_parent;
 __declspec(dllexport) size_t luau::thread_count = 0;
 void userthread_callback(lua_State* parent_thread, lua_State* thread) {
@@ -137,7 +150,6 @@ __declspec(dllexport) lua_State* luau::create_state() {
 	if (Luau::CodeGen::isSupported()) {
 		Luau::CodeGen::create(state);
 	}
-	register_base_funcs(state);
 	luaL_openlibs(state);
 	return state;
 }
@@ -259,6 +271,9 @@ __declspec(dllexport) std::string luau::optstring(lua_State* thread, int arg, st
 	size_t len = def.size();
 	const char* contents = luaL_optlstring(thread, arg, def.data(), &len);
 	return std::string(contents, len);
+}
+__declspec(dllexport) void luau::pushstring(lua_State* thread, std::string str) {
+	lua_pushlstring(thread, str.data(), str.size());
 }
 
 bool APIENTRY DllMain(HMODULE, DWORD reason, void* reserved) {
