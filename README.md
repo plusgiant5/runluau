@@ -1,6 +1,12 @@
 # The Modular Luau Runtime
 Fast, small, simple, intended to be modified.
 
+## Purpose
+Runs [Luau](https://github.com/luau-lang/luau) code on your computer through the command line.
+Has a plugin system to give it more capabilities than Luau would normally have. (filesystem, shell commands, graphics, or anything else you want if you make your own plugin)
+Has a `build` command which turns a Luau script into a standalone executable file with embedded plugins.
+You can pass arguments into Luau scripts with `--args` and access them from the script by using `...` in the global scope.
+
 ## How To Build
 1. Clone [Luau](https://github.com/luau-lang/luau) using Visual Studio.
 2. Set the Windows environment variable `%LUAUSRC%` to the path to the cloned Luau repo.
