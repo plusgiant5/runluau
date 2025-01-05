@@ -171,7 +171,7 @@ __declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const
 	}
 
 	if (Luau::CodeGen::isSupported()) {
-		Luau::CodeGen::CompilationOptions options{ .flags = Luau::CodeGen::CodeGen_ColdFunctions };
+		Luau::CodeGen::CompilationOptions options{};
 		Luau::CodeGen::compile(thread, -1, options);
 	}
 }
