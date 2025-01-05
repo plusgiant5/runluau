@@ -123,9 +123,12 @@
       <AdditionalDependencies>luau.lib;Luau.Ast.lib;Luau.Compiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
-      <Message>Copying libs.</Message>
-      <Outputs>file that doesn't exist</Outputs>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;_DEBUG;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -165,21 +168,31 @@
       </Command>
     </PreBuildEvent>
     <CustomBuildStep>
-      <Command>rmdir /s /q "$(SolutionDir)out\$(Configuration)\runluau-libs" &amp; mkdir "$(SolutionDir)out\$(Configuration)\runluau-libs" &amp; xcopy "$(SolutionDir)runluau-libs" "$(SolutionDir)out\$(Configuration)\runluau-libs" /E /H /C /I /Y</Command>
-      <Message>Copying libs.</Message>
-      <Outputs>file that doesn't exist</Outputs>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base_funcs.cpp" />
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="env.cpp" />
     <ClCompile Include="execute.cpp" />
+    <ClCompile Include="luaurc.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plugins.cpp" />
     <ClCompile Include="shared\file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base_funcs.h" />
+    <ClInclude Include="build.h" />
+    <ClInclude Include="env.h" />
     <ClInclude Include="execute.h" />
+    <ClInclude Include="json.hpp" />
+    <ClInclude Include="luaurc.h" />
     <ClInclude Include="plugins.h" />
     <ClInclude Include="shared\file.h" />
   </ItemGroup>

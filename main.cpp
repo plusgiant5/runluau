@@ -11,22 +11,28 @@
 #include "file.h"
 #include "execute.h"
 #include "plugins.h"
+#include "build.h"
+#include "env.h"
+#include "luaurc.h"
 
 void help_then_exit(std::string notice_message) {
 	printf(R"(%s Help is below:
 
-runluau mode options...
+runluau <mode> <...>
 
 Modes:
 	- Run a script. `args` is optional. If specified, everything after it will be passed into the script. If not specified, `script` will be set to "init".
-	runluau run <script>? <options> --args <...>
+	runluau run <path>? <options> --args <...>
 	- Build a script to an executable, with an optional list of plugins to embed into the output. If `plugins` isn't specified, it will use every plugin installed.
-	runluau build <script> <output> <options> --plugins <...>
-Options:
+	runluau build <path> <output> <options> --plugins <...>
+Options for `run` and `build`:
 	- [default: 1] Optimization level 0-2:
-	-O <n>
+	-O/-o <n>
 	- [default: 1] Debug level 0-2:
-	-g <n>
+	-g/-d <n>
+More modes:
+	- Creates a folder in the current directory with a `.luaurc` and `init.luau` inside.
+	runluau new <name>
 
 Script paths don't have to include `.luau` or `.lua`. `file.luau` can optionally be shortened to `file`.
 )", notice_message.c_str());
@@ -34,10 +40,10 @@ Script paths don't have to include `.luau` or `.lua`. `file.luau` can optionally
 }
 
 
-runluau::settings read_args(std::vector<std::string>& args, size_t starting_point) {
+runluau::settings_run_build read_args_run_build(std::vector<std::string>& args, size_t starting_point) {
 	std::vector<std::string> script_args;
 	std::vector<std::string> plugins;
-	runluau::settings settings;
+	runluau::settings_run_build settings;
 	std::unordered_set<std::string> used_args;
 	bool reading_args = false;
 	bool reading_plugins = false;
@@ -56,7 +62,8 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 				printf("Argument `%s` specified twice.", arg.c_str());
 				exit(ERROR_INVALID_PARAMETER);
 			}
-			if (arg == "-O" || arg == "-g") {
+			used_args.insert(arg);
+			if (arg == "-O" || arg == "-g" || arg == "-o" || arg == "-d") {
 				if (++i >= args.size())
 					help_then_exit(std::format("Expected value after argument `{}`.", arg));
 				int value;
@@ -67,11 +74,10 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 				}
 				if (value < 0 || value > 2)
 					help_then_exit(std::format("Value \"{}\" not in between 0 and 2.", value));
-				if (arg == "-O")
+				if (arg == "-O" || arg == "-o")
 					settings.O = value;
 				else
 					settings.g = value;
-				used_args.insert(arg);
 			} else {
 				help_then_exit(std::format("Unknown argument `{}`.", arg));
 			}
@@ -84,9 +90,6 @@ runluau::settings read_args(std::vector<std::string>& args, size_t starting_poin
 	return settings;
 }
 
-inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
-	return (value + (alignment - 1)) & ~(alignment - 1);
-}
 BOOL WINAPI ctrl_handler(DWORD type) {
 	switch (type) {
 	case CTRL_C_EVENT:
@@ -106,172 +109,122 @@ int main(int argc, char* argv[]) {
 		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 		SetConsoleMode(console, mode);
 	}
+	char* existing_var = nullptr;
+	size_t existing_var_len;
+	_dupenv_s(&existing_var, &existing_var_len, "RUNLUAU");
+	if (existing_var) {
+		std::string parent_path = fs::absolute(get_parent_folder()).string();
+		if (parent_path != existing_var) {
+			DWORD error = SetPermanentEnvironmentVariable("RUNLUAU", parent_path.c_str());
+			if (error) {
+				if (error & 0x10000000) {
+					printf("RegSetValueEx inside SetPermanentEnvironmentVariable failed with %d\n", error & ~0x10000000);
+				} else {
+					printf("RegOpenKeyEx inside SetPermanentEnvironmentVariable failed with %d\n", error);
+				}
+				return error;
+			}
+		}
+	}
 	std::vector<std::string> args(argv + 1, argv + argc);
-	if (args.size() < 1)
-		help_then_exit("Not enough arguments.");
+	const auto minimum_arguments = [&args](size_t amount) -> void {
+		if (args.size() - 1 < amount) {
+			help_then_exit("Not enough arguments.");
+		}
+	};
+	if (args.size() == 0) {
+		help_then_exit("Mode not specified.");
+	}
 	std::string mode = args[0];
 	if (mode == "run") {
 		read_file_info script;
-		runluau::settings settings;
+		runluau::settings_run_build settings;
 		bool script_specified = args.size() > 1;
 		if (script_specified) {
 			script_specified = args[1].substr(0, 1) != "-";
 		}
 		if (script_specified) {
 			script = read_script(args[1]);
-			settings = read_args(args, 2);
+			settings = read_args_run_build(args, 2);
 		} else {
 			script = read_script("init");
-			settings = read_args(args, 1);
+			settings = read_args_run_build(args, 1);
 		}
 		luau::set_O_g(settings.O, settings.g);
 		if (settings.plugins != std::nullopt)
 			help_then_exit("Cannot specify `--plugins` in `run` mode.");
 
-		runluau::execute(script.contents, settings);
+		fs::path root = fs::absolute(script.path).parent_path();
+		fs::path luaurc_path = root / ".luaurc";
+		
+		require_info require_info;
+		require_info.root = root;
+		require_info.aliases = {};
+		if (fs::is_regular_file(luaurc_path)) {
+			luaurc luaurc;
+			try {
+				read_luaurc(&luaurc, read_file(luaurc_path));
+			} catch (int err) {
+				printf("Access denied when reading luaurc \"%s\"\n", luaurc_path.string().c_str());
+				return err;
+			} catch (std::runtime_error err) {
+				printf("Failed to read luaurc \"%s\": %s\n", luaurc_path.string().c_str(), err.what());
+				return ERROR_INTERNAL_ERROR;
+			}
+			require_info.aliases = luaurc.aliases;
+		}
+		set_global_require_info(require_info);
+
+		runluau::execute(script.contents, settings, script.path);
 	} else if (mode == "build") {
-		if (args.size() < 3)
-			help_then_exit("Not enough arguments.");
+		minimum_arguments(2);
 		std::string source = read_script(args[1]).contents;
 		fs::path output_path = args[2];
-		runluau::settings settings = read_args(args, 3);
+		runluau::settings_run_build settings = read_args_run_build(args, 3);
 		luau::set_O_g(settings.O, settings.g);
 		if (settings.script_args != std::nullopt)
 			help_then_exit("Cannot specify `--args` in `build` mode.");
 
-		std::string bytecode = runluau::compile(source, settings.O, settings.g);
-		if (bytecode[0] == '\0') {
-			printf("Syntax error:\n%s\n", luau::beautify_syntax_error(DEFAULT_CHUNK_NAME + std::string(bytecode.data() + 1)).c_str());
-			return ERROR_INTERNAL_ERROR;
-		}
-
-		// Getting the template binary
-		HMODULE self_handle = GetModuleHandleW(NULL);
-		HRSRC resource_handle = FindResourceA(self_handle, MAKEINTRESOURCEA(101), "BINARY");
-		if (!resource_handle) {
-			DWORD last_error = GetLastError();
-			printf("Failed to FindResourceA (0x%.8X)\n", last_error);
-			return last_error;
-		}
-		HGLOBAL loaded = LoadResource(self_handle, resource_handle);
-		DWORD resource_size = SizeofResource(self_handle, resource_handle);
-		if (!loaded) {
-			DWORD last_error = GetLastError();
-			printf("Failed to LoadResource (0x%.8X)\n", last_error);
-			return last_error;
-		}
-		void* resource_buffer = LockResource(loaded); // Readonly
-		void* template_exe_buffer = malloc(resource_size);
-		if (template_exe_buffer == NULL) {
-			printf("Allocation error (allocation size 0x%X)\n", resource_size);
-			return ERROR_OUTOFMEMORY;
-		}
-		memcpy(template_exe_buffer, resource_buffer, resource_size);
-
-		// Open in trunc first to clear contents
-		std::ofstream pre_output_file(output_path, std::ios::binary | std::ios::out | std::ios::trunc);
-		if (!pre_output_file) {
-			int err = errno;
-			wprintf(L"Invalid output path \"%s\"\n", output_path.c_str());
-			return err;
-		}
-		pre_output_file.close();
-		std::ofstream output_file(output_path, std::ios::binary | std::ios::out | std::ios::app);
-		if (!output_file) {
-			int err = errno;
-			wprintf(L"Failed to open \"%s\" in append mode\n", output_path.c_str());
-			return err;
-		}
-		output_file.write((char*)template_exe_buffer, resource_size);
-		uintptr_t section_start = output_file.tellp();
-		auto dos_header = (IMAGE_DOS_HEADER*)(template_exe_buffer);
-		auto nt_header = (IMAGE_NT_HEADERS*)((uintptr_t)template_exe_buffer + dos_header->e_lfanew);
-		auto sections = (IMAGE_SECTION_HEADER*)((uintptr_t)(nt_header)+sizeof(*nt_header));
-		DWORD file_alignment = nt_header->OptionalHeader.FileAlignment;
-		DWORD section_alignment = nt_header->OptionalHeader.SectionAlignment;
-
-		// Writing the overlay
-		// The length of the bytecode, followed by the bytecode
-		size_t bytecode_size = bytecode.size();
-		output_file.write((char*)&bytecode_size, sizeof(bytecode_size));
-		output_file.write(bytecode.data(), bytecode_size);
-		// For each plugin, write its name, size, and contents
-		std::vector<std::string> plugins;
-		if (settings.plugins.has_value()) {
-			plugins = settings.plugins.value();
-		} else {
-			for (const auto& file : fs::directory_iterator(get_plugins_folder())) {
-				plugins.push_back(file.path().filename().string());
-			}
-		}
-		size_t plugins_count = plugins.size();
-		output_file.write((char*)&plugins_count, sizeof(plugins_count));
-		for (std::string short_plugin_name : plugins) {
-			auto plugin_info = read_plugin(short_plugin_name);
-			std::string plugin_contents = plugin_info.contents;
-			std::string plugin_name = plugin_info.path.filename().string();
-			printf("Plugin %s, size %llX\n", plugin_name.c_str(), plugin_contents.size());
-			output_file << plugin_name << '\0';
-			size_t plugin_contents_size = plugin_contents.size();
-			output_file.write((char*)&plugin_contents_size, sizeof(plugin_contents_size));
-			output_file.write(plugin_contents.data(), plugin_contents.size());
-		}
-
-		uintptr_t unaligned_end = output_file.tellp();
-		size_t zero_count = align(unaligned_end, section_alignment) - unaligned_end;
-		if (zero_count > 0) {
-			void* zeroes = malloc(zero_count);
-			if (zeroes == NULL) {
-				printf("Allocation error 2 (allocation size 0x%llX)\n", zero_count);
-				return ERROR_OUTOFMEMORY;
-			}
-			memset(zeroes, 0, zero_count);
-			output_file.write((char*)zeroes, zero_count);
-		}
-		uintptr_t section_end = output_file.tellp();
-		output_file.close();
-		// Create section to point to the overlay
-		IMAGE_SECTION_HEADER* highest_section = nullptr;
-		for (size_t i = 0; i < nt_header->FileHeader.NumberOfSections; i++) {
-			if (highest_section) {
-				if (sections[i].PointerToRawData > highest_section->PointerToRawData) {
-					highest_section = &sections[i];
-				}
+		return build(source, output_path, settings);
+	} else if (mode == "new") {
+		minimum_arguments(1);
+		std::string name = args[1];
+		
+		fs::path folder_path = fs::absolute(fs::path(name));
+		printf("%s\n", folder_path.string().c_str());
+		if (fs::exists(folder_path)) {
+			if (fs::is_regular_file(folder_path)) {
+				printf("A file exists at `%s`!\n", folder_path.string().c_str());
+				return ERROR_FILE_EXISTS;
+			} else if (fs::is_directory(folder_path)) {
+				printf("A folder already exists at `%s`!\n", folder_path.string().c_str());
+				return ERROR_FILE_EXISTS;
 			} else {
-				highest_section = &sections[i];
+				printf("Something already exists at `%s`!\n", folder_path.string().c_str());
+				return ERROR_FILE_EXISTS;
 			}
 		}
-		if (highest_section == nullptr) {
-			printf("Failed to find sections\n");
-			return ERROR_NOT_FOUND;
+		try {
+			fs::create_directory(name);
+		} catch (...) {
+			printf("Failed to create directory at path `%s`.", folder_path.string().c_str());
+			return ERROR_INVALID_NAME;
 		}
-		// Create a section to point to the overlay
-		WORD new_section_index = nt_header->FileHeader.NumberOfSections++;
-		IMAGE_SECTION_HEADER* next_section = &sections[new_section_index];
-		size_t new_section_size = section_end - section_start;
-		memcpy(&next_section->Name, ".runluau", 8);
-		next_section->Misc.VirtualSize = static_cast<DWORD>(new_section_size);
-		next_section->VirtualAddress = (DWORD)align((uintptr_t)highest_section->VirtualAddress + highest_section->Misc.VirtualSize, section_alignment);
-		next_section->SizeOfRawData = (DWORD)align(new_section_size, file_alignment);
-		next_section->PointerToRawData = highest_section->PointerToRawData + (DWORD)align(highest_section->SizeOfRawData, file_alignment);
-		next_section->PointerToRelocations = NULL;
-		next_section->PointerToLinenumbers = NULL;
-		next_section->NumberOfRelocations = 0;
-		next_section->NumberOfLinenumbers = 0;
-		next_section->Characteristics = IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_INITIALIZED_DATA;
-		nt_header->OptionalHeader.SizeOfImage = (DWORD)align((uintptr_t)next_section->VirtualAddress + next_section->Misc.VirtualSize, section_alignment);
-		// Add in the newly made section by overwriting the headers
-		std::fstream post_output_file(output_path, std::ios::binary | std::ios::in | std::ios::out);
-		if (!post_output_file) {
-			int err = errno;
-			wprintf(L"Failed to open \"%s\" in final stage\n", output_path.c_str());
-			return err;
+		std::string content;
+		fs::path template_luaurc = get_parent_folder() / "template.luaurc";
+		if (fs::is_regular_file(template_luaurc)) {
+			content = read_file(template_luaurc);
+		} else {
+			content = R"({
+	"languageMode": "strict",
+	"aliases": {
+	}
+})";
+			write_file(template_luaurc, content);
 		}
-		post_output_file.seekp(0, std::ios::beg);
-		post_output_file.write((char*)template_exe_buffer, 0x400);
-		post_output_file.close();
-
-		wprintf(L"Built to \"%s\"\n", fs::absolute(output_path).c_str());
+		write_file(folder_path / ".luaurc", content);
+		write_file(folder_path / "init.luau", "print(\"Hello world!\")");
+		printf("Created `%s`.", name.c_str());
 	} else {
 		help_then_exit(std::format("Unknown mode `{}`.", mode));
 	}

@@ -4,6 +4,17 @@
 
 #include <Luau/Compiler.h>
 
+std::unordered_map<lua_State*, fs::path> state_paths;
+std::optional<fs::path> get_state_path(lua_State* state) {
+	if (state_paths.find(state) == state_paths.end()) {
+		return std::nullopt;
+	}
+	return state_paths.at(state);
+}
+void set_state_path(lua_State* state, fs::path path) {
+	state_paths.insert({state, path});
+}
+
 // Mostly from Luau source
 std::unordered_map<lua_State*, std::unordered_map<std::string, lua_State*>> module_thread_cache; // [mainthread][path]
 std::recursive_mutex module_thread_cache_mutex;
@@ -13,7 +24,7 @@ int require(lua_State* thread) {
 
 	read_file_info module_info;
 	try {
-		module_info = read_require(path);
+		module_info = read_require(path, get_state_path(thread));
 	} catch (std::runtime_error error) {
 		lua_pushstring(thread, error.what());
 		lua_error(thread);
@@ -41,6 +52,7 @@ int require(lua_State* thread) {
 
 	lua_State* module_thread = luau::create_thread(main_thread);
 	threads.insert({resolved_path, module_thread});
+	set_state_path(module_thread, module_info.path);
 	lua_xmove(main_thread, thread, 1);
 
 	luaL_sandboxthread(module_thread);

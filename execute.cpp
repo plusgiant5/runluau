@@ -18,7 +18,7 @@ lua_State* create_state() {
 	return state;
 }
 
-void runluau::execute_bytecode(const std::string& bytecode, settings& settings) {
+void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& settings, std::optional<fs::path> path) {
 	auto script_args = settings.script_args.value_or(std::vector<std::string>());
 
 	lua_State* state = create_state();
@@ -39,8 +39,8 @@ void runluau::execute_bytecode(const std::string& bytecode, settings& settings) 
 
 	lua_close(state);
 }
-void runluau::execute(const std::string& source, settings& settings) {
-	execute_bytecode(compile(source, luau::get_O(), luau::get_g()), settings);
+void runluau::execute(const std::string& source, settings_run_build& settings, std::optional<fs::path> path) {
+	execute_bytecode(compile(source, luau::get_O(), luau::get_g()), settings, path);
 }
 std::string runluau::compile(const std::string& source, const int O, const int g) {
 	return Luau::compile(source, {.optimizationLevel = O, .debugLevel = g});
