@@ -92,14 +92,14 @@ read_file_info read_require(const std::string& raw_path, std::optional<fs::path>
 		base = global_require_info.aliases.at(alias);
 	} else if (raw_path.substr(0, 2) == "./") {
 		base = global_require_info.root;
-		relative = raw_path;
+		relative = raw_path.substr(3);
 	} else if (raw_path.substr(0, 3) == "../") {
 		if (caller_path.has_value()) {
 			base = caller_path.value();
 		} else {
 			base = global_require_info.root;
 		}
-		relative = raw_path;
+		relative = raw_path.substr(4);
 	} else {
 		base = global_require_info.root;
 		relative = raw_path;
