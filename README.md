@@ -21,3 +21,6 @@ Would be a very difficult feat, as the plugins system is based off loading DLLs,
 
 ## Command Line Arguments
 You can read the arguments passed into a Luau script simply by using `...` in the global scope. It will be a tuple of strings.
+
+## Debugging in Visual Studio
+The debugger settings are usually set to whatever random thing I was testing at the time. Change the command, command arguments, and working directory in the runluau project configuration -> Debugging to debug for yourself.
