@@ -179,7 +179,6 @@
   <ItemGroup>
     <ClCompile Include="base_funcs.cpp" />
     <ClCompile Include="build.cpp" />
-    <ClCompile Include="env.cpp" />
     <ClCompile Include="execute.cpp" />
     <ClCompile Include="luaurc.cpp" />
     <ClCompile Include="main.cpp" />
@@ -189,7 +188,6 @@
   <ItemGroup>
     <ClInclude Include="base_funcs.h" />
     <ClInclude Include="build.h" />
-    <ClInclude Include="env.h" />
     <ClInclude Include="execute.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="luaurc.h" />

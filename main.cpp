@@ -12,7 +12,6 @@
 #include "execute.h"
 #include "plugins.h"
 #include "build.h"
-#include "env.h"
 #include "luaurc.h"
 
 void help_then_exit(std::string notice_message) {
@@ -108,20 +107,6 @@ int main(int argc, char* argv[]) {
 		GetConsoleMode(console, &mode);
 		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 		SetConsoleMode(console, mode);
-	}
-	char* existing_var = nullptr;
-	size_t existing_var_len;
-	_dupenv_s(&existing_var, &existing_var_len, "RUNLUAU");
-	if (existing_var) {
-		std::string parent_path = fs::absolute(get_parent_folder()).string();
-		if (parent_path != existing_var) {
-			try {
-				SetPermanentEnvironmentVariable("RUNLUAU", parent_path.c_str());
-			} catch (std::runtime_error error) {
-				printf("%s\n", error.what());
-				return ERROR_INTERNAL_ERROR;
-			}
-		}
 	}
 	std::vector<std::string> args(argv + 1, argv + argc);
 	const auto minimum_arguments = [&args](size_t amount) -> void {
