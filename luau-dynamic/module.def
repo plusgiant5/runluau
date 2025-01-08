@@ -65,3 +65,5 @@ EXPORTS
 	lua_pushlightuserdatatagged
 	lua_pushnil
 	lua_mainthread
+	lua_rawcheckstack
+	lua_checkstack

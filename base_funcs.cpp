@@ -20,6 +20,7 @@ std::unordered_map<lua_State*, std::unordered_map<std::string, lua_State*>> modu
 std::recursive_mutex module_thread_cache_mutex;
 int require(lua_State* thread) {
 	wanted_arg_count(1);
+	stack_slots_needed(5);
 	std::string path = luaL_checkstring(thread, 1);
 
 	read_file_info module_info;

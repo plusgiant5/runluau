@@ -115,14 +115,11 @@ int main(int argc, char* argv[]) {
 	if (existing_var) {
 		std::string parent_path = fs::absolute(get_parent_folder()).string();
 		if (parent_path != existing_var) {
-			DWORD error = SetPermanentEnvironmentVariable("RUNLUAU", parent_path.c_str());
-			if (error) {
-				if (error & 0x10000000) {
-					printf("RegSetValueEx inside SetPermanentEnvironmentVariable failed with %d\n", error & ~0x10000000);
-				} else {
-					printf("RegOpenKeyEx inside SetPermanentEnvironmentVariable failed with %d\n", error);
-				}
-				return error;
+			try {
+				SetPermanentEnvironmentVariable("RUNLUAU", parent_path.c_str());
+			} catch (std::runtime_error error) {
+				printf("%s\n", error.what());
+				return ERROR_INTERNAL_ERROR;
 			}
 		}
 	}

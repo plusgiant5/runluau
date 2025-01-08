@@ -132,9 +132,31 @@ declare gfx: {
 
 
 -- osunsafe
+export type os_time = {
+	sec: number;
+	min: number;
+	hour: number;
+
+	day: number;
+	month: number;
+	year: number;
+
+	wday: number;
+	yday: number;
+
+	isdst: boolean;
+}
 declare os: {
+	clock: (): number;
+	date: (fmt: string?, time: number?): os_time | string;
+	difftime: (beginning: number, ending: number): number;
+	time: (time: os_time): number;
+
 	execute: (command: string) -> ();
 	capture: (command: string) -> string;
 	getenv: (variable: string) -> string?;
-	setenv: (variable: string, value: string) -> ();
+	setenv: (variable: string, value: string, global_mode: ("user" | "system")?) -> ();
+
+	getclipboard: () -> string?;
+	setclipboard: (text: string) -> ();
 }

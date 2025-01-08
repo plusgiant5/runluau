@@ -2,4 +2,4 @@
 
 #include <Windows.h>
 
-DWORD SetPermanentEnvironmentVariable(const char* value, const char* data);
+void SetPermanentEnvironmentVariable(const char* name, const char* value, bool system = false);

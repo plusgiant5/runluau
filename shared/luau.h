@@ -55,6 +55,8 @@ if (n > 0 && lua_gettop(thread) < n) { \
 	lua_error(thread); \
 	return 0; \
 }
+// Too many slots isn't that big of a deal, too little can lead to random crashes
+#define stack_slots_needed(n) lua_rawcheckstack(thread, n);
 
 // Yielding for custom functions
 typedef HANDLE yield_ready_event_t;
