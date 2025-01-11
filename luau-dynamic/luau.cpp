@@ -80,7 +80,7 @@ __declspec(dllexport) std::string luau::beautify_stack_trace(std::string stack_t
 			colored += NUMBER_COLOR + stack_trace.substr(current);
 			break;
 		} else if (newline != std::string::npos && space > newline) {
-			space = newline - 1;
+			space = newline;
 		}
 		colored += NUMBER_COLOR + stack_trace.substr(current, space - current) + MAGENTA + ": ";
 		current = space + 1;
