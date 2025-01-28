@@ -150,7 +150,7 @@ declare os: {
 	clock: () -> number;
 	date: (fmt: string?, time: number?) -> os_time | string;
 	difftime: (beginning: number, ending: number) -> number;
-	time: (time: os_time) -> number;
+	time: (time: os_time?) -> number;
 
 	execute: (command: string) -> ();
 	capture: (command: string) -> string;
