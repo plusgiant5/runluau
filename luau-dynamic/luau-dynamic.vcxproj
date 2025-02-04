@@ -126,13 +126,13 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>%LUAUSRC%\out\build\x64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(LUAUSRC)\out\build\x64-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Luau.CodeGen.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
     </Link>
@@ -152,7 +152,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <DebugInformationFormat>None</DebugInformationFormat>
@@ -167,7 +167,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>%LUAUSRC%\out\build\x64-release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(LUAUSRC)\out\build\x64-release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Luau.CodeGen.lib;Luau.VM.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>

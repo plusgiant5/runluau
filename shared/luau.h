@@ -47,6 +47,10 @@ namespace luau {
 	API std::string checkstring(lua_State* thread, int arg);
 	API std::string optstring(lua_State* thread, int arg, std::string def);
 	API void pushstring(lua_State* thread, std::string str);
+
+	API void add_loaded_plugin(std::string name);
+	API std::vector<std::string> get_loaded_plugins();
+	API bool is_plugin_loaded(std::string name);
 }
 
 #define wanted_arg_count(n) \

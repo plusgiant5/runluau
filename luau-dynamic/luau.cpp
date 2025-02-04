@@ -8,6 +8,8 @@
 #include <Luau/CodeGen.h>
 #pragma pop_macro("max")
 
+#define API __declspec(dllexport)
+
 void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 	(void)ud;
 	(void)osize;
@@ -21,36 +23,36 @@ void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 
 int specified_O = -1;
 int specified_g = -1;
-__declspec(dllexport) void luau::set_O_g(int O, int g) {
+API void luau::set_O_g(int O, int g) {
 	specified_O = O;
 	specified_g = g;
 }
-__declspec(dllexport) int luau::get_O() {
+API int luau::get_O() {
 	if (specified_O == -1) {
 		throw std::runtime_error("O not specified");
 	}
 	return specified_O;
 }
-__declspec(dllexport) int luau::get_g() {
+API int luau::get_g() {
 	if (specified_g == -1) {
 		throw std::runtime_error("g not specified");
 	}
 	return specified_g;
 }
 
-__declspec(dllexport) std::recursive_mutex luau::luau_operation_mutex;
+API std::recursive_mutex luau::luau_operation_mutex;
 
-__declspec(dllexport) const char* luau::get_error_message(lua_State* thread) {
+API const char* luau::get_error_message(lua_State* thread) {
 	const char* message = lua_tostring(thread, -1);
 	if (message == nullptr) {
 		return "(none)";
 	}
 	return message;
 }
-__declspec(dllexport) const char* luau::get_stack_trace(lua_State* thread) {
+API const char* luau::get_stack_trace(lua_State* thread) {
 	return lua_debugtrace(thread);
 }
-__declspec(dllexport) std::string luau::beautify_stack_trace(std::string stack_trace) {
+API std::string luau::beautify_stack_trace(std::string stack_trace) {
 	std::string colored;
 	size_t current = 0;
 	while (current < stack_trace.size()) {
@@ -101,7 +103,7 @@ __declspec(dllexport) std::string luau::beautify_stack_trace(std::string stack_t
 	}
 	return colored.substr(0, colored.size() - 1) + RESET;
 }
-__declspec(dllexport) std::string luau::beautify_syntax_error(std::string syntax_error) {
+API std::string luau::beautify_syntax_error(std::string syntax_error) {
 	size_t space = syntax_error.find_first_of(' ');
 	if (space == std::string::npos) {
 		return syntax_error;
@@ -122,7 +124,7 @@ __declspec(dllexport) std::string luau::beautify_syntax_error(std::string syntax
 }
 
 std::unordered_map<lua_State*, lua_State*> thread_to_parent;
-__declspec(dllexport) size_t luau::thread_count = 0;
+API size_t luau::thread_count = 0;
 void userthread_callback(lua_State* parent_thread, lua_State* thread) {
 	if (parent_thread) {
 		//printf("Thread created: %lld -> %lld\n", luau::thread_count, luau::thread_count + 1);
@@ -137,14 +139,14 @@ void set_callbacks(lua_State* thread) {
 	lua_Callbacks* callbacks = lua_callbacks(thread);
 	callbacks->userthread = userthread_callback;
 }
-__declspec(dllexport) lua_State* luau::get_parent_state(lua_State* child) {
+API lua_State* luau::get_parent_state(lua_State* child) {
 	if (thread_to_parent.find(child) == thread_to_parent.end()) {
 		return nullptr;
 	}
 	return thread_to_parent.at(child);
 }
 
-__declspec(dllexport) lua_State* luau::create_state() {
+API lua_State* luau::create_state() {
 	lua_State* state = lua_newstate(l_alloc, NULL);
 	set_callbacks(state);
 	if (Luau::CodeGen::isSupported()) {
@@ -153,11 +155,11 @@ __declspec(dllexport) lua_State* luau::create_state() {
 	luaL_openlibs(state);
 	return state;
 }
-__declspec(dllexport) lua_State* luau::create_thread(lua_State* thread) {
+API lua_State* luau::create_thread(lua_State* thread) {
 	lua_State* new_thread = lua_newthread(thread);
 	return new_thread;
 }
-__declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name, bool beautify_syntax_error) {
+API void luau::load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name, bool beautify_syntax_error) {
 	int status = luau_load(thread, ("=" + chunk_name).c_str(), bytecode.data(), bytecode.size(), 0);
 	if (status != 0) {
 		if (status != 1) {
@@ -176,17 +178,17 @@ __declspec(dllexport) void luau::load_and_handle_status(lua_State* thread, const
 	}
 }
 lua_State* main_thread = nullptr;
-__declspec(dllexport) void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
+API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
 	if (!main_thread) {
 		main_thread = thread;
 	}
 	scheduler::add_thread_to_resume_queue(thread, from, args, setup_func);
 }
-__declspec(dllexport) void luau::on_thread_error(lua_State* thread) {
-	printf("Script errored:\n" RED "%s" RESET "\nStack trace:\n%s\n", get_error_message(thread), beautify_stack_trace(get_stack_trace(thread)).c_str());
+API void luau::on_thread_error(lua_State* thread) {
+	printf("Script erro%dred:\n" RED "%s" RESET "\nStack trace:\n%s\n", get_error_message(thread), beautify_stack_trace(get_stack_trace(thread)).c_str());
 	//printf("Script errored. Stack trace:\n%s\n", lua_debugtrace(thread));
 }
-__declspec(dllexport) bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
+API bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
 	std::lock_guard<std::recursive_mutex> lock(luau_operation_mutex);
 	//printf("Requested %p %d %d\n", thread, lua_status(thread), lua_costatus(from, thread));
 	if (lua_status(thread) == LUA_YIELD || lua_costatus(from, thread) == LUA_COSUS) {
@@ -248,32 +250,43 @@ void luau::start_scheduler() {
 	//printf("Scheduler stopped\n");
 }
 
-__declspec(dllexport) void signal_yield_ready(yield_ready_event_t yield_ready_event) {
+API void signal_yield_ready(yield_ready_event_t yield_ready_event) {
 	if (!SetEvent(yield_ready_event)) {
 		DWORD error = GetLastError();
 		printf("Failed to SetEvent: %d\n", error);
 		exit(error);
 	}
 }
-__declspec(dllexport) void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud) {
+API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud) {
 	yield_ready_event_t yield_ready_event = CreateEvent(nullptr, false, false, nullptr);
 	std::thread win_thread(func, thread, yield_ready_event, ud);
 	win_thread.detach();
 	WaitForSingleObject(yield_ready_event, INFINITE);
 }
 
-__declspec(dllexport) std::string luau::checkstring(lua_State* thread, int arg) {
+API std::string luau::checkstring(lua_State* thread, int arg) {
 	size_t len;
 	const char* contents = luaL_checklstring(thread, arg, &len);
 	return std::string(contents, len);
 }
-__declspec(dllexport) std::string luau::optstring(lua_State* thread, int arg, std::string def) {
+API std::string luau::optstring(lua_State* thread, int arg, std::string def) {
 	size_t len = def.size();
 	const char* contents = luaL_optlstring(thread, arg, def.data(), &len);
 	return std::string(contents, len);
 }
-__declspec(dllexport) void luau::pushstring(lua_State* thread, std::string str) {
+API void luau::pushstring(lua_State* thread, std::string str) {
 	lua_pushlstring(thread, str.data(), str.size());
+}
+
+std::vector<std::string> loaded_plugins;
+API void luau::add_loaded_plugin(std::string name) {
+	loaded_plugins.push_back(name);
+}
+API std::vector<std::string> luau::get_loaded_plugins() {
+	return loaded_plugins;
+}
+API bool luau::is_plugin_loaded(std::string name) {
+	return std::find(loaded_plugins.begin(), loaded_plugins.end(), name) != loaded_plugins.end();;
 }
 
 bool APIENTRY DllMain(HMODULE, DWORD reason, void* reserved) {

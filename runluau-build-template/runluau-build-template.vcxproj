@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -115,7 +116,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,7 +138,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>%LUAUSRC%\CodeGen\include;%LUAUSRC%\Common\include;%LUAUSRC%\VM\include;%LUAUSRC%\Compiler\include;%LUAUSRC%\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;../shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

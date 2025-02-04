@@ -10,18 +10,18 @@
 
 using namespace runluau;
 
-lua_State* create_state() {
+lua_State* create_state(std::optional<std::unordered_set<std::string>> plugins_to_load = std::nullopt) {
 	struct lua_State* state = luau::create_state();
 	register_base_funcs(state);
-	apply_plugins(state);
+	apply_plugins(state, plugins_to_load);
 	luaL_sandbox(state);
 	return state;
 }
 
-void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& settings, std::optional<fs::path> path) {
+void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& settings, std::optional<fs::path> path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
 	auto script_args = settings.script_args.value_or(std::vector<std::string>());
 
-	lua_State* state = create_state();
+	lua_State* state = create_state(plugins_to_load);
 	lua_State* thread = luau::create_thread(state);
 
 	try {
@@ -39,8 +39,8 @@ void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& 
 
 	lua_close(state);
 }
-void runluau::execute(const std::string& source, settings_run_build& settings, std::optional<fs::path> path) {
-	execute_bytecode(compile(source, luau::get_O(), luau::get_g()), settings, path);
+void runluau::execute(const std::string& source, settings_run_build& settings, std::optional<fs::path> path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
+	execute_bytecode(compile(source, luau::get_O(), luau::get_g()), settings, path, plugins_to_load);
 }
 std::string runluau::compile(const std::string& source, const int O, const int g) {
 	return Luau::compile(source, {.optimizationLevel = O, .debugLevel = g});

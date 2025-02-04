@@ -139,6 +139,7 @@ int main(int argc, char* argv[]) {
 		fs::path root = fs::absolute(script.path).parent_path();
 		fs::path luaurc_path = root / ".luaurc";
 		
+		std::optional<std::unordered_set<std::string>> plugins_to_load = std::nullopt;
 		require_info require_info;
 		require_info.root = root;
 		require_info.aliases = {};
@@ -154,10 +155,11 @@ int main(int argc, char* argv[]) {
 				return ERROR_INTERNAL_ERROR;
 			}
 			require_info.aliases = luaurc.aliases;
+			plugins_to_load = luaurc.plugins_to_load;
 		}
 		set_global_require_info(require_info);
 
-		runluau::execute(script.contents, settings, script.path);
+		runluau::execute(script.contents, settings, script.path, plugins_to_load);
 	} else if (mode == "build") {
 		minimum_arguments(2);
 		std::string source = read_script(args[1]).contents;
