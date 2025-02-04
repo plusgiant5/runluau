@@ -25,7 +25,6 @@ void read_luaurc(luaurc* luaurc, std::string content) {
 			}
 		}
 		if (json.contains("plugins")) {
-			printf("Using plugins list\n");
 			luaurc->plugins_to_load.emplace();
 			const auto& plugins = json["plugins"];
 			if (!plugins.is_object()) {

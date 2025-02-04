@@ -185,7 +185,7 @@ API void luau::add_thread_to_resume_queue(lua_State* thread, lua_State* from, in
 	scheduler::add_thread_to_resume_queue(thread, from, args, setup_func);
 }
 API void luau::on_thread_error(lua_State* thread) {
-	printf("Script erro%dred:\n" RED "%s" RESET "\nStack trace:\n%s\n", get_error_message(thread), beautify_stack_trace(get_stack_trace(thread)).c_str());
+	printf("Script errored:\n" RED "%s" RESET "\nStack trace:\n%s\n", get_error_message(thread), beautify_stack_trace(get_stack_trace(thread)).c_str());
 	//printf("Script errored. Stack trace:\n%s\n", lua_debugtrace(thread));
 }
 API bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func) {
