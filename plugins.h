@@ -5,6 +5,7 @@
 namespace fs = std::filesystem;
 
 #include "Luau/VM/include/lua.h"
+#include <optional>
 
 fs::path get_plugins_folder();
 void apply_plugins(lua_State* state, std::optional<std::unordered_set<std::string>> plugins_to_load = std::nullopt);

@@ -1,19 +1,14 @@
 #pragma once
-#ifndef _SHARED_LUAU_H
-#define _SHARED_LUAU_H
+#ifndef SHARED_LUAU_H
+#define SHARED_LUAU_H
 #define SCHEDULER_RATE 240
 #define DEFAULT_CHUNK_NAME "runluau" // No spaces or colons
-
-
-
 
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#include <unistd.h>
 #endif
 
-#include <thread>
 #include <functional>
 #include <mutex>
 #include <filesystem>
@@ -23,13 +18,19 @@ namespace fs = std::filesystem;
 #undef max
 #include <Luau/CodeGen.h>
 #pragma pop_macro("max")
-#include <Luau/Compiler.h>
-#include <lualib.h>
 
 #ifdef PROJECT_EXPORTS
+#ifdef _WIN32
 #define API __declspec(dllexport)
 #else
+#define API
+#endif
+#else
+#ifdef _WIN32
 #define API __declspec(dllimport)
+#else
+#define API
+#endif
 #endif
 
 namespace luau {

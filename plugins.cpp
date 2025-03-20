@@ -12,7 +12,6 @@
 #endif
 #include "errors.h"
 #include "macros.h"
-
 #include "luau.h"
 
 typedef void(__fastcall* register_library_t)(lua_State* state);

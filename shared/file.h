@@ -11,6 +11,9 @@ namespace fs = std::filesystem;
 #else
 #include "errors.h"
 #endif
+#include <vector>
+#include <optional>
+#include <format>
 
 #define PLUGINS_FOLDER_NAME "plugins"
 

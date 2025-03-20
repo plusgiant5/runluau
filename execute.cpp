@@ -12,6 +12,7 @@
 #include "plugins.h"
 #include "errors.h"
 #include "base_funcs.h"
+#include "Luau/VM/include/lualib.h"
 
 using namespace runluau;
 
