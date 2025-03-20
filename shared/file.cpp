@@ -1,40 +1,11 @@
-#pragma once
-
-#include <string>
-#include <filesystem>
-namespace fs = std::filesystem;
-
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#include <sys/stat.h>
-#endif
-#define PLUGINS_FOLDER_NAME "plugins"
-
-const fs::path get_self_path() {
-#ifdef _WIN32
-	wchar_t self_path[1024];
-	GetModuleFileNameW(NULL, self_path, 1024);
-	return fs::path(self_path);
-#else
-	char self_path[1024];
-	readlink("/proc/self/exe", self_path, sizeof(self_path));
-	return fs::path(self_path);
-#endif
-}
-
-struct read_file_info {
-	std::string contents;
-	fs::path path;
-};
+#include "file.h"
 
 fs::path get_parent_folder() {
 	return get_self_path().parent_path();
 }
 fs::path get_plugins_folder() {
 	fs::path plugins_folder = get_parent_folder() / PLUGINS_FOLDER_NAME;
-	if (!fs::exists(plugins_folder)) [[unlikely]] {
+	if (!fs::exists(plugins_folder)) {
 		fs::create_directory(plugins_folder);
 	}
 	return plugins_folder;
@@ -43,7 +14,7 @@ fs::path get_plugins_folder() {
 
 std::string read_file(const fs::path path) {
 	std::ifstream file(path, std::ios::binary);
-	if (!file) [[unlikely]] {
+	if (!file) {
 		throw errno;
 	}
 	std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -67,7 +38,7 @@ read_file_info read_paths(const std::vector<fs::path>& paths) {
 }
 read_file_info read_script(const std::string& path) {
 	try {
-		return read_paths({path, path + ".luau", path + ".lua"});
+		return read_paths({path, path + ".luau", path + ".lua", path + "\\init.luau", path + "\\init.lua", path + "\\init"});
 	} catch (int err) {
 		if (err == ENOENT) {
 			printf("No script found at \"%s\"\n", path.c_str());
@@ -103,19 +74,65 @@ read_file_info read_plugin(const std::string& path) {
 		}
 	}
 }
-read_file_info read_require(const std::string& path) {
+
+require_info global_require_info;
+void set_global_require_info(require_info require_info) {
+	global_require_info = require_info;
+}
+read_file_info read_require(const std::string& raw_path, std::optional<fs::path> caller_path) {
+	fs::path base;
+	fs::path relative;
+	if (raw_path.substr(0, 1) == "@") {
+		std::string alias;
+		size_t slash = raw_path.find('/');
+		if (slash == std::string::npos) {
+			alias = raw_path.substr(1);
+			relative = "";
+		} else {
+			alias = raw_path.substr(1, slash - 1);
+			relative = raw_path.substr(slash + 1);
+		}
+		if (global_require_info.aliases.find(alias) == global_require_info.aliases.end()) {
+			throw std::runtime_error(std::format("Alias \"@{}\" doesn't exist", alias));
+		}
+		base = global_require_info.aliases.at(alias);
+	} else if (raw_path.substr(0, 2) == "./") {
+		base = global_require_info.root;
+		relative = raw_path.substr(3);
+	} else if (raw_path.substr(0, 3) == "../") {
+		if (caller_path.has_value()) {
+			base = caller_path.value();
+		} else {
+			base = global_require_info.root;
+		}
+		relative = raw_path.substr(4);
+	} else {
+		base = global_require_info.root;
+		relative = raw_path;
+	}
+	fs::path path = base / relative;
+	std::string path_str = path.string();
 	try {
 		std::vector<fs::path> possible_paths;
 		for (const auto& suffix : {".luau", "", "/init.luau", "/init", ".lua", "/init.lua"}) {
-			possible_paths.push_back(path + suffix);
-			possible_paths.push_back(get_parent_folder() / (path + suffix));
+			possible_paths.push_back(path_str + suffix);
+			possible_paths.push_back(get_parent_folder() / (path_str + suffix));
 		}
 		return read_paths(possible_paths);
 	} catch (int err) {
 		if (err == ENOENT) {
-			throw std::runtime_error(std::format("No file found at \"{}\"", path));
+			throw std::runtime_error(std::format("No file found at \"{}\"", path_str));
 		} else {
-			throw std::runtime_error(std::format("Access denied when reading file \"{}\"", path));
+			throw std::runtime_error(std::format("Access denied when reading file \"{}\"", path_str));
 		}
 	}
+}
+
+void write_file(const fs::path path, const std::string& content) {
+	std::ofstream file(path, std::ios::binary);
+	if (!file) {
+		throw errno;
+	}
+	file.write(content.data(), content.size());
+	file.close();
 }

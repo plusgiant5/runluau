@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{3A
 		external\env.d.luau = external\env.d.luau
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcxproj", "{D05D695C-6B27-4F52-AC4F-4103509A0943}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcxproj", "{53C8695B-D529-44CB-B80C-07EB8E916A7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,13 +41,12 @@ Global
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x64.Build.0 = Release|x64
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x86.ActiveCfg = Release|Win32
 		{CFD23E11-C781-465D-AC4D-8BCED22EA582}.Release|x86.Build.0 = Release|Win32
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x64.ActiveCfg = Debug|x64
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x64.Build.0 = Debug|x64
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x86.ActiveCfg = Debug|Win32
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Debug|x86.Build.0 = Debug|Win32
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x64.ActiveCfg = Release|x64
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x86.ActiveCfg = Release|Win32
-		{D05D695C-6B27-4F52-AC4F-4103509A0943}.Release|x86.Build.0 = Release|Win32
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Debug|x64.ActiveCfg = Debug|x64
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Debug|x86.ActiveCfg = Debug|Win32
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Debug|x86.Build.0 = Debug|Win32
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Release|x64.ActiveCfg = Release|x64
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Release|x86.ActiveCfg = Release|Win32
+		{53C8695B-D529-44CB-B80C-07EB8E916A7E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

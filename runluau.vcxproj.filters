@@ -24,12 +24,39 @@
     <ClCompile Include="plugins.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base_funcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="build.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="luaurc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="execute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="plugins.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base_funcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="build.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luaurc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

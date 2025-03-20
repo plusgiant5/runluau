@@ -24,8 +24,13 @@ namespace fs = std::filesystem;
 #include <Luau/CodeGen.h>
 #pragma pop_macro("max")
 #include <Luau/Compiler.h>
-#include "../Luau/VM/include/lualib.h"
-#include "macros.h"
+#include <lualib.h>
+
+#ifdef PROJECT_EXPORTS
+#define API __declspec(dllexport)
+#else
+#define API __declspec(dllimport)
+#endif
 
 namespace luau {
 	API extern std::recursive_mutex luau_operation_mutex;
@@ -44,15 +49,28 @@ namespace luau {
 	API std::string beautify_stack_trace(std::string stack_trace);
 	API std::string beautify_syntax_error(std::string syntax_error);
 	API void on_thread_error(lua_State* thread);
-	API std::string wrapped_compile(const std::string& source, const int O, const int g);
+
+	API void set_O_g(int O, int g);
+	API int get_O();
+	API int get_g();
+
+	API std::string checkstring(lua_State* thread, int arg);
+	API std::string optstring(lua_State* thread, int arg, std::string def);
+	API void pushstring(lua_State* thread, std::string str);
+
+	API void add_loaded_plugin(std::string name);
+	API std::vector<std::string> get_loaded_plugins();
+	API bool is_plugin_loaded(std::string name);
 }
 
 #define wanted_arg_count(n) \
-if (n > 0 && lua_gettop(thread) < n) [[unlikely]] { \
+if (n > 0 && lua_gettop(thread) < n) { \
 	lua_pushfstring(thread, __FUNCTION__" expects at least " #n " arguments, received %d", lua_gettop(thread)); \
 	lua_error(thread); \
 	return 0; \
 }
+// Too many slots isn't that big of a deal, too little can lead to random crashes
+#define stack_slots_needed(n) lua_rawcheckstack(thread, n);
 
 // Yielding for custom functions
 typedef void* yield_ready_event_t;
