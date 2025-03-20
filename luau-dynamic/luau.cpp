@@ -215,7 +215,7 @@ API bool luau::resume_and_handle_status(lua_State* thread, lua_State* from, int 
 void luau::start_scheduler() {
 	HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
 	if (!timer) {
-		DWORD error = GetLastError();
+		unsigned long error = GetLastError();
 		printf("Failed to CreateWaitableTimer: %d\n", error);
 		exit(error);
 	}
@@ -252,7 +252,7 @@ void luau::start_scheduler() {
 
 API void signal_yield_ready(yield_ready_event_t yield_ready_event) {
 	if (!SetEvent(yield_ready_event)) {
-		DWORD error = GetLastError();
+		unsigned long error = GetLastError();
 		printf("Failed to SetEvent: %d\n", error);
 		exit(error);
 	}

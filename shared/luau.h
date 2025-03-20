@@ -1,25 +1,36 @@
 #pragma once
-
+#ifndef SHARED_LUAU_H
+#define SHARED_LUAU_H
 #define SCHEDULER_RATE 240
 #define DEFAULT_CHUNK_NAME "runluau" // No spaces or colons
 
-
-
-
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#endif
 
-#include <thread>
 #include <functional>
 #include <mutex>
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include <lualib.h>
+#pragma push_macro("max")
+#undef max
+#include <Luau/CodeGen.h>
+#pragma pop_macro("max")
 
 #ifdef PROJECT_EXPORTS
+#ifdef _WIN32
 #define API __declspec(dllexport)
 #else
+#define API
+#endif
+#else
+#ifdef _WIN32
 #define API __declspec(dllimport)
+#else
+#define API
+#endif
 #endif
 
 namespace luau {
@@ -29,9 +40,9 @@ namespace luau {
 	API void load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name = DEFAULT_CHUNK_NAME, bool beautify_syntax_error = false);
 	// Must call this with main thread before starting scheduler, and within functions passed into `create_windows_thread_for_luau`
 	// `setup_func` is to avoid desync when modifying the state before resuming, check `task.wait` for an example
-	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
+	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [](){});
 	API lua_State* get_parent_state(lua_State* child);
-	API bool resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});
+	API bool resume_and_handle_status(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [](){});
 	API extern size_t thread_count;
 	API void start_scheduler();
 	API const char* get_error_message(lua_State* thread);
@@ -63,7 +74,8 @@ if (n > 0 && lua_gettop(thread) < n) { \
 #define stack_slots_needed(n) lua_rawcheckstack(thread, n);
 
 // Yielding for custom functions
-typedef HANDLE yield_ready_event_t;
+typedef void* yield_ready_event_t;
 typedef void(*yield_thread_func_t)(lua_State* thread, yield_ready_event_t yield_ready_event, void* ud);
 API void signal_yield_ready(yield_ready_event_t yield_ready_event);
 API void create_windows_thread_for_luau(lua_State* thread, yield_thread_func_t func, void* ud = nullptr);
+#endif

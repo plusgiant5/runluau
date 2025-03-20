@@ -1,12 +1,18 @@
 #include "execute.h"
 
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #include <Luau/Compiler.h>
 
 #include "colors.h"
 #include "plugins.h"
+#include "errors.h"
 #include "base_funcs.h"
+#include "Luau/VM/include/lualib.h"
 
 using namespace runluau;
 

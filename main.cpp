@@ -1,5 +1,11 @@
 #include <stdio.h>
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
+#include <csignal>
+#include <signal.h>
+#endif
 
 #include <cerrno>
 #include <string>
@@ -8,11 +14,13 @@
 #include <fstream>
 #include <format>
 
+#include "errors.h"
 #include "file.h"
 #include "execute.h"
 #include "plugins.h"
 #include "build.h"
 #include "luaurc.h"
+#include "luau.h"
 
 void help_then_exit(std::string notice_message) {
 	printf(R"(%s Help is below:
@@ -22,9 +30,7 @@ runluau <mode> <...>
 Modes:
 	- Run a script. `args` is optional. If specified, everything after it will be passed into the script. If not specified, `script` will be set to "init".
 	runluau run <path>? <options> --args <...>
-	- Build a script to an executable, with an optional list of plugins to embed into the output. If `plugins` isn't specified, it will use every plugin installed.
-	runluau build <path> <output> <options> --plugins <...>
-Options for `run` and `build`:
+Options:
 	- [default: 1] Optimization level 0-2:
 	-O/-o <n>
 	- [default: 1] Debug level 0-2:
@@ -89,18 +95,38 @@ runluau::settings_run_build read_args_run_build(std::vector<std::string>& args, 
 	return settings;
 }
 
-BOOL WINAPI ctrl_handler(DWORD type) {
+inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
+	return (value + (alignment - 1)) & ~(alignment - 1);
+}
+#ifdef _WIN32
+BOOL WINAPI ctrl_handler(unsigned long type) {
+#else
+int ctrl_handler(int type) {
+#endif
 	switch (type) {
+	#ifdef _WIN32
 	case CTRL_C_EVENT:
+	#else
+	case SIGINT:
+	#endif
 		printf("Exiting\n");
+		#ifdef _WIN32
 		__fastfail(ERROR_PROCESS_ABORTED);
-		return TRUE;
+		#else
+		raise(SIGABRT);
+		#endif
+		return 1;
 	default:
-		return FALSE;
+		return 0;
 	}
 }
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
 	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+#else
+	signal(SIGINT, (void(*)(int))ctrl_handler);
+#endif
+#ifdef _WIN32
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (console) {
 		DWORD mode;
@@ -108,6 +134,7 @@ int main(int argc, char* argv[]) {
 		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 		SetConsoleMode(console, mode);
 	}
+#endif
 	std::vector<std::string> args(argv + 1, argv + argc);
 	const auto minimum_arguments = [&args](size_t amount) -> void {
 		if (args.size() - 1 < amount) {

@@ -6,7 +6,14 @@
 namespace fs = std::filesystem;
 #include <fstream>
 
+#ifdef _WIN32
 #include <Windows.h>
+#else
+#include "errors.h"
+#endif
+#include <vector>
+#include <optional>
+#include <format>
 
 #define PLUGINS_FOLDER_NAME "plugins"
 
