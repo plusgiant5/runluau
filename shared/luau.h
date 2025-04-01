@@ -1,7 +1,6 @@
 #pragma once
 
 #define SCHEDULER_RATE 240
-#define DEFAULT_CHUNK_NAME "runluau" // No spaces or colons
 
 
 
@@ -23,10 +22,14 @@ namespace fs = std::filesystem;
 #endif
 
 namespace luau {
+	namespace settings {
+		API extern bool use_native_codegen;
+	}
+
 	API extern std::recursive_mutex luau_operation_mutex;
 	API lua_State* create_state();
 	API lua_State* create_thread(lua_State* thread);
-	API void load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name = DEFAULT_CHUNK_NAME, bool beautify_syntax_error = false);
+	API void load_and_handle_status(lua_State* thread, const std::string& bytecode, std::string chunk_name, bool beautify_syntax_error = false);
 	// Must call this with main thread before starting scheduler, and within functions passed into `create_windows_thread_for_luau`
 	// `setup_func` is to avoid desync when modifying the state before resuming, check `task.wait` for an example
 	API void add_thread_to_resume_queue(lua_State* thread, lua_State* from, int args, std::function<void()> setup_func = [&](){});

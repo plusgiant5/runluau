@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;RUNLUAU_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Analysis\include;$(LUAUSRC)\Ast\include;shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -143,7 +143,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;RUNLUAU_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Ast\include;shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LUAUSRC)\CodeGen\include;$(LUAUSRC)\Common\include;$(LUAUSRC)\VM\include;$(LUAUSRC)\Compiler\include;$(LUAUSRC)\Analysis\include;$(LUAUSRC)\Ast\include;shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

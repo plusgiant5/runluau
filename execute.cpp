@@ -18,14 +18,14 @@ lua_State* create_state(std::optional<std::unordered_set<std::string>> plugins_t
 	return state;
 }
 
-void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& settings, std::optional<fs::path> path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
+void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& settings, fs::path path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
 	auto script_args = settings.script_args.value_or(std::vector<std::string>());
 
 	lua_State* state = create_state(plugins_to_load);
 	lua_State* thread = luau::create_thread(state);
 
 	try {
-		luau::load_and_handle_status(thread, bytecode, DEFAULT_CHUNK_NAME, true);
+		luau::load_and_handle_status(thread, bytecode, path.string().c_str(), true);
 	} catch (std::runtime_error error) {
 		printf("Failed to load bytecode: %s\n", error.what());
 		exit(ERROR_INTERNAL_ERROR);
@@ -39,7 +39,7 @@ void runluau::execute_bytecode(const std::string& bytecode, settings_run_build& 
 
 	lua_close(state);
 }
-void runluau::execute(const std::string& source, settings_run_build& settings, std::optional<fs::path> path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
+void runluau::execute(const std::string& source, settings_run_build& settings, fs::path path, std::optional<std::unordered_set<std::string>> plugins_to_load) {
 	execute_bytecode(compile(source, luau::get_O(), luau::get_g()), settings, path, plugins_to_load);
 }
 std::string runluau::compile(const std::string& source, const int O, const int g) {

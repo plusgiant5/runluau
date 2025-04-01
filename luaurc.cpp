@@ -24,21 +24,35 @@ void read_luaurc(luaurc* luaurc, std::string content) {
 				luaurc->aliases.insert({key, value});
 			}
 		}
-		if (json.contains("plugins")) {
+		if (json.contains("runluau_plugins")) {
 			luaurc->plugins_to_load.emplace();
-			const auto& plugins = json["plugins"];
+			const auto& plugins = json["runluau_plugins"];
 			if (!plugins.is_object()) {
-				throw std::runtime_error(std::string("Expected `plugins` to be object, got ") + plugins.type_name());
+				throw std::runtime_error(std::string("Expected `runluau_plugins` to be object, got ") + plugins.type_name());
 			}
 			for (const auto& [key, value] : plugins.items()) {
 				if (!value.is_boolean()) {
 					throw std::runtime_error(std::string("Expected plugin value to be boolean, got ") + value.type_name());
 				}
 				if (luaurc->plugins_to_load.value().find(key) != luaurc->plugins_to_load.value().end()) {
-					throw std::runtime_error(std::string("Plugin ") + key + " was listed in `plugins` more than once");
+					throw std::runtime_error(std::string("Plugin ") + key + " was listed in `runluau_plugins` more than once");
 				}
 				if (value) {
 					luaurc->plugins_to_load.value().insert(key);
+				}
+			}
+		}
+		if (json.contains("runluau_settings")) {
+			const auto& settings = json["runluau_settings"];
+			if (!settings.is_object()) {
+				throw std::runtime_error(std::string("Expected `runluau_settings` to be object, got ") + settings.type_name());
+			}
+			for (const auto& [key, value] : settings.items()) {
+				if (key == "use_native_codegen") {
+					if (!value.is_boolean()) {
+						throw std::runtime_error(std::string("Expected runluau setting `use_native_codegen` to be set to a boolean, got ") + value.type_name());
+					}
+					luaurc->use_native_codegen = value;
 				}
 			}
 		}

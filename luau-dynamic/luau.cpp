@@ -10,6 +10,8 @@
 
 #define API __declspec(dllexport)
 
+API bool luau::settings::use_native_codegen;
+
 void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
 	(void)ud;
 	(void)osize;
@@ -149,7 +151,7 @@ API lua_State* luau::get_parent_state(lua_State* child) {
 API lua_State* luau::create_state() {
 	lua_State* state = lua_newstate(l_alloc, NULL);
 	set_callbacks(state);
-	if (Luau::CodeGen::isSupported()) {
+	if (luau::settings::use_native_codegen && Luau::CodeGen::isSupported()) {
 		Luau::CodeGen::create(state);
 	}
 	luaL_openlibs(state);
@@ -172,7 +174,7 @@ API void luau::load_and_handle_status(lua_State* thread, const std::string& byte
 		throw std::runtime_error(std::format("Syntax error:\n{}", error_message));
 	}
 
-	if (Luau::CodeGen::isSupported()) {
+	if (luau::settings::use_native_codegen && Luau::CodeGen::isSupported()) {
 		Luau::CodeGen::CompilationOptions options{};
 		Luau::CodeGen::compile(thread, -1, options);
 	}

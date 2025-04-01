@@ -143,8 +143,8 @@ int main(int argc, char* argv[]) {
 		require_info require_info;
 		require_info.root = root;
 		require_info.aliases = {};
+		luaurc luaurc; // To use default values when there's no .luaurc
 		if (fs::is_regular_file(luaurc_path)) {
-			luaurc luaurc;
 			try {
 				read_luaurc(&luaurc, read_file(luaurc_path));
 			} catch (int err) {
@@ -154,9 +154,10 @@ int main(int argc, char* argv[]) {
 				printf("Failed to read luaurc \"%s\": %s\n", luaurc_path.string().c_str(), err.what());
 				return ERROR_INTERNAL_ERROR;
 			}
-			require_info.aliases = luaurc.aliases;
-			plugins_to_load = luaurc.plugins_to_load;
 		}
+		require_info.aliases = luaurc.aliases;
+		plugins_to_load = luaurc.plugins_to_load;
+		luau::settings::use_native_codegen = luaurc.use_native_codegen;
 		set_global_require_info(require_info);
 
 		runluau::execute(script.contents, settings, script.path, plugins_to_load);

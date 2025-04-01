@@ -16,8 +16,23 @@ void set_state_path(lua_State* state, fs::path path) {
 }
 
 // Mostly from Luau source
-std::unordered_map<lua_State*, std::unordered_map<std::string, lua_State*>> module_thread_cache; // [mainthread][path]
-std::recursive_mutex module_thread_cache_mutex;
+int loadstring(lua_State* thread) {
+	size_t l = 0;
+	const char* source = luaL_checklstring(thread, 1, &l);
+	const char* name = luaL_optstring(thread, 2, source);
+	lua_pop(thread, 2);
+
+	std::string bytecode = runluau::compile(source, luau::get_O(), luau::get_g());
+	try {
+		lua_setsafeenv(thread, LUA_ENVIRONINDEX, false);
+		luau::load_and_handle_status(thread, bytecode, name);
+		return 1;
+	} catch (std::runtime_error error) {
+		lua_pushnil(thread);
+		lua_pushstring(thread, error.what());
+		return 2;
+	}
+}
 int require(lua_State* thread) {
 	wanted_arg_count(1);
 	stack_slots_needed(5);
@@ -33,26 +48,18 @@ int require(lua_State* thread) {
 	}
 
 	lua_State* main_thread = lua_mainthread(thread);
-
-	std::lock_guard<std::recursive_mutex> lock(module_thread_cache_mutex);
-	module_thread_cache.insert({main_thread, {}});
-	auto& threads = module_thread_cache.at(main_thread);
-
 	std::string resolved_path = std::filesystem::absolute(module_info.path).string();
-	if (threads.find(resolved_path) != threads.end()) {
+
+	luaL_findtable(thread, LUA_REGISTRYINDEX, "_MODULES", 1);
+	lua_getfield(thread, -1, resolved_path.c_str());
+	if (!lua_isnil(thread, -1)) {
 		//printf("Using cached module %s\n", resolved_path.c_str());
-		lua_State* module_thread = threads.at(resolved_path);
-		lua_xpush(module_thread, thread, 1);
-		lua_pushvalue(thread, -1);
-		if (lua_type(thread, 2) == LUA_TSTRING) {
-			lua_pop(thread, 1);
-			lua_pushstring(thread, "Cyclic dependency!");
-		}
+		lua_remove(thread, -2);
 		return 1;
 	}
+	lua_pop(thread, 2);
 
 	lua_State* module_thread = luau::create_thread(main_thread);
-	threads.insert({resolved_path, module_thread});
 	set_state_path(module_thread, module_info.path);
 	lua_xmove(main_thread, thread, 1);
 
@@ -81,7 +88,7 @@ int require(lua_State* thread) {
 		luau::on_thread_error(module_thread);
 		error = std::format("Module `{}` errored on require", path);
 		break;
-	}	
+	}
 	default:
 		break;
 	}
@@ -92,9 +99,12 @@ int require(lua_State* thread) {
 	}
 
 	lua_xpush(module_thread, thread, 1);
-	lua_pushvalue(thread, -1);
-
-	lua_ref(thread, 3);
+	int module_ret_index = lua_gettop(thread);
+	luaL_findtable(thread, LUA_REGISTRYINDEX, "_MODULES", 1);
+	lua_pushstring(thread, resolved_path.c_str());
+	lua_pushvalue(thread, module_ret_index);
+	lua_settable(thread, -3);
+	lua_pop(thread, 1);
 
 	return 1;
 }
@@ -102,4 +112,5 @@ int require(lua_State* thread) {
 void register_base_funcs(lua_State* state) {
 #define reg(name) lua_pushcfunction(state, name, #name); lua_setglobal(state, #name);
 	reg(require);
+	reg(loadstring);
 }

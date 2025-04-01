@@ -7,7 +7,7 @@ inline uintptr_t align(uintptr_t value, uintptr_t alignment) {
 DWORD runluau::build(std::string source, fs::path output_path, runluau::settings_run_build settings) {
 	std::string bytecode = runluau::compile(source, settings.O, settings.g);
 	if (bytecode[0] == '\0') {
-		printf("Syntax error:\n%s\n", luau::beautify_syntax_error(DEFAULT_CHUNK_NAME + std::string(bytecode.data() + 1)).c_str());
+		printf("Syntax error:\n%s\n", luau::beautify_syntax_error(std::string(bytecode.data() + 1)).c_str());
 		return ERROR_INTERNAL_ERROR;
 	}
 

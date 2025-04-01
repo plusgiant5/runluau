@@ -9,5 +9,7 @@ namespace fs = std::filesystem;
 struct luaurc {
 	std::unordered_map<std::string, fs::path> aliases;
 	std::optional<std::unordered_set<std::string>> plugins_to_load = std::nullopt;
+
+	bool use_native_codegen = true;
 };
 void read_luaurc(luaurc* luaurc, std::string content);

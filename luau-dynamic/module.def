@@ -67,3 +67,6 @@ EXPORTS
 	lua_mainthread
 	lua_rawcheckstack
 	lua_checkstack
+	luaL_findtable
+	lua_remove
+	lua_setsafeenv
