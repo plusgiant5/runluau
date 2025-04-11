@@ -22,6 +22,8 @@ runluau <mode> <...>
 Modes:
 	- Run a script. `args` is optional. If specified, everything after it will be passed into the script. If not specified, `script` will be set to "init".
 	runluau run <path>? <options> --args <...>
+	- Run bytecode directly. Insecure and prone to RCEs, but fast. `args` is the same as in `run`. Ignores `.luaurc`.
+	runluau runbtc <path> --args <...>
 	- Build a script to an executable, with an optional list of plugins to embed into the output. If `plugins` isn't specified, it will use every plugin installed.
 	runluau build <path> <output> <options> --plugins <...>
 Options for `run` and `build`:
@@ -118,7 +120,15 @@ int main(int argc, char* argv[]) {
 		help_then_exit("Mode not specified.");
 	}
 	std::string mode = args[0];
-	if (mode == "run") {
+	if (mode == "runbtc") {
+		minimum_arguments(1);
+		runluau::settings_run_build settings = read_args_run_build(args, 2);
+		luau::set_O_g(settings.O, settings.g);
+		if (settings.plugins != std::nullopt)
+			help_then_exit("Cannot specify `--plugins` in `runbtc` mode.");
+		read_file_info bytecode = read_script(args[1]);
+		runluau::execute_bytecode(bytecode.contents, settings, bytecode.path);
+	} else if (mode == "run") {
 		read_file_info script;
 		runluau::settings_run_build settings;
 		bool script_specified = args.size() > 1;
