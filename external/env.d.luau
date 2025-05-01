@@ -1,3 +1,8 @@
+-- betterprint
+declare tostringex: <T>(value: T) -> string
+
+
+
 -- filesystem
 declare fs: {
 	read_file: (path: string) -> string;
